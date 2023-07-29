@@ -8,7 +8,8 @@ int main(int argc, char **argv) {
   }
 
   char *p = argv[1];
-
+  printf(".intel_syntax noprefix");
+  printf(".extern printf\n");
   printf(".global main\n");
   printf("main:\n");
   printf("  mov rax, %ld\n", strtol(p, &p, 10));
@@ -26,7 +27,7 @@ int main(int argc, char **argv) {
       continue;
     }
 
-    fprintf(stderr, "予期しない文字です: '%c'\n", *p);
+    fprintf(stderr, "unexpected syntax: '%c'\n", *p);
     return 1;
   }
 
