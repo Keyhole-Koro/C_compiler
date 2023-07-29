@@ -1,11 +1,14 @@
-CFLAGS=-std=c11 -g -static
+CC = gcc
+CFLAGS = -std=c11 -g -static -Wall -Werror
 
-9cc: 9cc.c
+kcc: kcc.c
+	$(CC) $(CFLAGS) -o kcc kcc.c
 
-test: 9cc
+test: kcc
 	./test.sh
 
 clean:
-	rm -f 9cc *.o *~ tmp*
+	rm -f kcc *.o *~ tmp*
 
 .PHONY: test clean
+
