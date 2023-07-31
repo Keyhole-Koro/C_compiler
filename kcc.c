@@ -42,7 +42,7 @@ void expect(char op) {
 
 int expect_number() {
   if (token->kind != TK_NUM) {
-    printf("this is not number"); // replace to error function
+    error("this is not number"); // replace to error function
   }
   int number = token->value;
   token = token->next;
@@ -83,7 +83,7 @@ Token *tokenize(char *input) {
       current->value = strtol(input, &input, 10); // this part increments input
       continue;
     }
-    // error("disable to tokenize");
+    error("disable to tokenize");
   }
   new_token(TK_END, current, input);
   return head.next;
