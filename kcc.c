@@ -35,7 +35,7 @@ void error(char *fmt, ...) {
 }
 
 void expect(char op) {
-  if (token->kind != TK_RESERVED || token->str[0] != op)
+  if (token->kind != TK_OPERATOR || token->symbol[0] != op)
     error("this is not '%c'", op);
   token = token->next;
 }
@@ -50,7 +50,7 @@ int expect_number() {
 }
 
 bool consume(char op) {
-  if (token->kind != TK_RESERVED || token->str[0] != op)
+  if (token->kind != TK_OPERATOR || token->symbol[0] != op)
     return false;
   token = token->next;
   return true;
