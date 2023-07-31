@@ -26,6 +26,20 @@ bool at_end() {
   return token->kind == TK_END;
 }
 
+void error(char *fmt, ...) {
+  va_list ap;
+  va_start(ap, fmt);
+  vfprintf(stderr, fmt, ap);
+  fprintf(stderr, "\n");
+  exit(1);
+}
+
+void expect(char op) {
+  if (token->kind != TK_RESERVED || token->str[0] != op)
+    error("this is not '%c'", op);
+  token = token->next;
+}
+
 int expect_number() {
   if (token->kind != TK_NUM) {
     printf("this is not number"); // replace to error function
@@ -33,6 +47,13 @@ int expect_number() {
   int number = token->value;
   token = token->next;
   return number;
+}
+
+bool consume(char op) {
+  if (token->kind != TK_RESERVED || token->str[0] != op)
+    return false;
+  token = token->next;
+  return true;
 }
 
 Token *new_token(TokenKind kind, Token *current, char *input) {
