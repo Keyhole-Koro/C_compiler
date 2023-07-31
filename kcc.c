@@ -82,17 +82,14 @@ int main(int argc, char **argv) {
   printf("main:\n");
 
   printf("  mov rax, %d\n", expect_number());
-
+  //expect_number proceeds next
   while (!at_end()) {
-    if (token->kind == TK_OPERATOR) {
-      token = token->next;
-      if (strcmp(token->symbol, "+") == 0) {
-        printf("  add rax, %d\n", expect_number());
-      } else if (strcmp(token->symbol, "-") == 0) {
-        printf("  sub rax, %d\n", expect_number());
-      }
+    if (consume('+')) {//doesnt detect error
+      printf("  add rax, %d\n", expect_number());
+      continue;
     }
-    token = token->next;
+    expect('-');//detect error
+    printf("  sub rax, %d\n", expect_number());
   }
 
   printf("  ret\n");
