@@ -6,99 +6,85 @@
 #include <string.h>
 
 typedef enum {
-  ND_EXPR,
-  ND_OPERATOR,
-  ND_NUM,
-  ND_END,
-} NodeKind;
+  tk_num,
+  tk_charactor,
+  tk_eof
+} tokenkind;
 
-typedef struct Node Node;
+struct Token {
+  tokenkind kind;
+  int value;
+  char symbol;
+  struct Token *next;
+}
+
+typedef enum {
+  unaryPlus,
+  numMinus,
+  plus,
+  minus,
+  mul,
+  div,
+  lpths,
+  rpths
+} nodesymbol;
 
 struct Node {
-  NodeKind kind;
-  Node *ltp;
-  Node *next;
-  Node *rtp;
-  int value;
-  char *symbol; // str
+  nodesymbol symbol;
+  int value;//only contains number
+  struct Node *lnode;
+  struct Node *rnode;
 };
 
-Node *node;
+Token *add_token(tokenkind kind, Token *cur_token, char *ipt) {
+  Token *new_token = calloc(1, sizeof(Token));
+  new_token->kind = kind;
+  new_token->value = *ipt;
+  new_token->next = NULL;
 
-bool at_end() {
-  return node->kind == ND_END;
-}
-
-void error(char *fmt, ...) {
-  va_list ap;
-  va_start(ap, fmt);
-  vfprintf(stderr, fmt, ap);
-  fprintf(stderr, "\n");
-  exit(1);
-}
-
-void expect(char op) {
-  if (node->kind != ND_OPERATOR || node->symbol[0] != op)
-    error("this is not '%c'", op);
-  node = node->next;
-}
-
-int expect_number() {
-  if (node->kind != ND_NUM) {
-    error("this is not number"); // replace to error function
+  if (cur_token) {
+      cur_token->next = new_token;
   }
-  int number = node->value;
-  node = node->next;
-  return number;
+
+  return new_token;
 }
 
-bool consume(char op) {
-  if (node->kind != ND_OPERATOR || node->symbol[0] != op)
-    return false;
-  node = node->next;
-  return true;
-}
+Token *tokenize(char *input) {
+  Token *head = malloc(1, sizeof(Token));
+  head->kind = -1;
+  head->value = \0;
+  head->next = NULL;
+  Token *cur_token = head;
+  char *ipt = input;
 
-Node *new_node(NodeKind kind, Node *current, char *input) {
-  Node *tok = calloc(1, sizeof(Node));
-  tok->kind = kind;
-  tok->symbol = input;
-  current->next = tok;
-  return tok;
-}
-
-Node *nodeize(char *input) {
-  Node head;
-  head.next = NULL;
-  Node *current = &head; // updated everytime
-
-  while (*input) {
-    if (isspace(*input)) {
-      input++;
-      continue;
-    }
-    if (*input == '+' || *input == '-') {
-      current = new_node(ND_OPERATOR, current, input++);
-      continue;
-    }
-    if (isdigit(*input)) {
-      current = new_node(ND_NUM, current, input);
-      current->value = strtol(input, &input, 10); // this part increments input
-      continue;
-    }
-    error("disable to nodeize");
+  while (*ipt) {
+      if (isspace(*ipt)) {
+          ipt++;
+          continue;
+      }
+      if (isdigit(*ipt)) {
+          cur_token = add_token(tk_num, cur_token, ipt++);
+          continue;
+      }
+      if (*ipt == '+' || *ipt == '-' || *ipt == '*' || *ipt == '/' || *ipt == '(' || *ipt == ')') {
+          cur_token = add_token(tk_symbol, cur_token, ipt++);
+          continue;
+      }
+      // If none of the above conditions matched, it means the input contains an invalid character.
+      printf("Invalid character: %c\n", *ipt);
+      error("invalid syntax");//have yet to defiine
   }
-  new_node(ND_END, current, input);
-  return head.next;
+  return head;
 }
+
 
 int main(int argc, char **argv) {
   if (argc != 2) {
     printf("invalid the number of arguments");
     return 1;
   }
-
-  node = nodeize(argv[1]);
+  Token token = tokenize(argv[1]);//also used for error detection later
+  Node node = expr(token);
 
   printf(".intel_syntax noprefix\n");
   printf(".extern printf\n");
@@ -117,5 +103,7 @@ int main(int argc, char **argv) {
   }
 
   printf("  ret\n");
+  exit(0);
   return 0;
 }
+//add error exit(1)
