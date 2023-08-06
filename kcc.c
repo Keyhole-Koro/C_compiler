@@ -16,17 +16,17 @@ struct Token {
   int value;
   char symbol;
   struct Token *next;
-}
+};
 
 typedef enum {
-  unaryPlus,
-  numMinus,
-  plus,
-  minus,
-  mul,
-  div,
-  lpths,
-  rpths
+  nd_unaryPlus,
+  nd_numMinus,
+  nd_plus,
+  nd_minus,
+  nd_mul,
+  nd_div,
+  nd_lpths,
+  nd_rpths
 } nodesymbol;
 
 struct Node {
@@ -52,7 +52,7 @@ Token *add_token(tokenkind kind, Token *cur_token, char *ipt) {
 Token *tokenize(char *input) {
   Token *head = malloc(1, sizeof(Token));
   head->kind = -1;
-  head->value = \0;
+  head->value = '\n';
   head->next = NULL;
   Token *cur_token = head;
   char *ipt = input;
@@ -67,12 +67,12 @@ Token *tokenize(char *input) {
           continue;
       }
       if (*ipt == '+' || *ipt == '-' || *ipt == '*' || *ipt == '/' || *ipt == '(' || *ipt == ')') {
-          cur_token = add_token(tk_symbol, cur_token, ipt++);
+          cur_token = add_token(tk_charactor, cur_token, ipt++);
           continue;
       }
       // If none of the above conditions matched, it means the input contains an invalid character.
       printf("Invalid character: %c\n", *ipt);
-      error("invalid syntax");//have yet to defiine
+      //error("invalid syntax");//have yet to defiine
   }
   return head;
 }
@@ -84,6 +84,7 @@ int main(int argc, char **argv) {
     return 1;
   }
   Token token = tokenize(argv[1]);//also used for error detection later
+  /*
   Node node = expr(token);
 
   printf(".intel_syntax noprefix\n");
@@ -103,7 +104,7 @@ int main(int argc, char **argv) {
   }
 
   printf("  ret\n");
-  exit(0);
+  */
   return 0;
 }
 //add error exit(1)
