@@ -107,5 +107,8 @@ int main(int argc, char **argv) {
   */
   return 0;
 }
+<<<<<<< HEAD
 
+=======
+>>>>>>> c2ac85c2172e45d46f96f68b98e53bb5a1c9245e
 //add error exit(1)
