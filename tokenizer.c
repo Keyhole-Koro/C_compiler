@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-typedef enum {
+enum {
     ADD,      // +
     SUB,      // -
     MUL,      // *
@@ -36,20 +36,20 @@ typedef enum {
     SIZEOF,   // sizeof
 
     BOOL,     // bool
-    INT,      // int data type
-    CHAR,     // char data type
-    FLOAT,    // float data type
-    DOUBLE,   // double data type
-    VOID,     // void data type
-    LONG,     // long data type
-    SHORT,    // short data type
-    UNSIGNED, // unsigned modifier
-    SIGNED,   // signed modifier
-    CONST,    // const modifier
-    STATIC,   // static modifier
-    EXTERN,   // extern modifier
-    AUTO,     // auto modifier
-    REGISTER, // register modifier
+    INT,      // int
+    CHAR,     // char
+    FLOAT,    // float
+    DOUBLE,   // double
+    VOID,     // void
+    LONG,     // long
+    SHORT,    // short
+    UNSIGNED, // unsigned
+    SIGNED,   // signed
+    CONST,    // const
+    STATIC,   // static
+    EXTERN,   // extern
+    AUTO,     // auto
+    REGISTER, // register
 
     IF,       // if
     ELSE,     // else
@@ -69,18 +69,89 @@ typedef enum {
     SIZEOF,   // sizeof
 
     VARIABLE, //defined by user
-} Keyword;
+};
 
 
 
 typedef struct Token Token;
 
 struct Token {
-  Keyword kw;
+  int kw;
   int value;
   char *str;
   struct Token *next;
 };
+
+struct {
+  char *operator;
+  int op;
+} symbols[] = {
+  {"+", ADD},
+  {"-", SUB},
+  {"*", MUL},
+  {"/", DIV},
+  {"%", MOD},
+  {"=", ASSIGN},
+  {"==", EQ},
+  {"!=", NEQ},
+  {"<", LT},
+  {">", GT},
+  {"<=", LTE},
+  {">=", GTE},
+  {"&&", AND},
+  {"||", OR},
+  {"!", NOT},
+  {"&", BITAND},
+  {"|", BITOR},
+  {"^", BITXOR},
+  {"~", BITNOT},
+  {"<<", SHL},
+  {">>", SHR},
+  {"++", INC},
+  {"--", DEC},
+  {"*", POINTER},
+  {"&", ADDRESS},
+  {"->", MEMBER},
+};//optimize later
+
+struct {
+  char *keyword;
+  int kw;
+} symbols[] = {
+  {"sizeof", SIZEOF},
+  {"bool", BOOL},
+  {"int", INT},
+  {"char", CHAR},
+  {"float", FLOAT},
+  {"double", DOUBLE},
+  {"void", VOID},
+  {"long", LONG},
+  {"short", SHORT},
+  {"unsigned", UNSIGNED},
+  {"signed", SIGNED},
+  {"const", CONST},
+  {"static", STATIC},
+  {"extern", EXTERN},
+  {"auto", AUTO},
+  {"register", REGISTER},
+  {"if", IF},
+  {"else", ELSE},
+  {"while", WHILE},
+  {"do", DO},
+  {"for", FOR},
+  {"switch", SWITCH},
+  {"case", CASE},
+  {"default", DEFAULT},
+  {"break", BREAK},
+  {"continue", CONTINUE},
+  {"return", RETURN},
+  {"typedef", TYPEDEF},
+  {"struct", STRUCT},
+  {"union", UNION},
+  {"enum", ENUM},
+  {"sizeof", SIZEOF},
+  {"variable", VARIABLE},
+}
 
 Token tokenize(char *input){
     Token *head = calloc(1, sizeof(Token));
@@ -90,19 +161,21 @@ Token tokenize(char *input){
     Token *cur_token = head;
     char *ipt = input;
 
-    Keyword *idfd_kw;//identified keyword
+    int *idfd_kw;//identified keyword
 
     while(*ipt){
       if (isspace(*ipt)) {
         ipt++;
         continue;
       } else {
-        idfd_kw = kw_idfr(ipt++);
+        idfd_kw = kwIdfr(ipt++);
       }
+
+      
     }
 }
 
-Token *makeToken(Keyword kind, Token *cur_token, char *ipt){
+Token *makeToken(int kind, Token *cur_token, char *ipt){
   Token *new_token = calloc(1, sizeof(Token));
   new_token->kw = kind;
   new_token->value = *ipt;
@@ -111,14 +184,6 @@ Token *makeToken(Keyword kind, Token *cur_token, char *ipt){
   return new_token;
 }
 
-Keyword *kwIdfr(char *ipt){//keyword identifier   
-    switch ()
-    {
-    case /* constant-expression */:
-        /* code */
-        break;
-    
-    default:
-        break;
-    }
+int *kwIdfr(char *ipt){//keyword identifier   
+    if()
 }
