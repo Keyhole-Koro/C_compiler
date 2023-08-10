@@ -83,9 +83,9 @@ struct Token {
 };
 
 struct {
-  char *operator;
-  int op;
-} symbols[] = {
+  char *key;
+  int value;
+} operators[] = {
   {"+", ADD},
   {"-", SUB},
   {"*", MUL},
@@ -115,9 +115,9 @@ struct {
 };//optimize later
 
 struct {
-  char *keyword;
-  int kw;
-} symbols[] = {
+  char *key;
+  int value;
+} keywords[] = {
   {"sizeof", SIZEOF},
   {"bool", BOOL},
   {"int", INT},
@@ -168,11 +168,57 @@ Token tokenize(char *input){
         ipt++;
         continue;
       } else {
-        idfd_kw = kwIdfr(ipt++);
+        idfd_kw = kwIdfr(&ipt);
       }
 
       
     }
+}
+
+bool ifAlphabet_Num(char *letter) {
+	if ((*letter < 'a' || *letter > 'z') && (*letter < 'A' || *letter > 'Z') && (*letter < '0' || *letter > '9')) return true;
+	return false;
+}
+char *readNext(char **ptr_letter)){
+	char *ptr_next_letter++;
+	if (!ifAlphabet_Num(**ptr_next_letter)) {
+		return NULL;
+	} else {
+		return readNext(*ptr_next_letter)
+	}
+}
+	
+bool ifMatch(char *target, char *pattern){
+	size_t target_length = strlen(target);
+    size_t pattern_length = strlen(pattern);
+
+    if (target_length > pattern_length) return false;
+	
+	if (strncmp(target, pattern, pattern_length) == 0) {
+		return true;
+	} else {
+		return false;
+	}
+}
+
+int *kwIdfr(char **ipt){//keyword identifier
+	struct {
+	  char *key;
+	  int value;
+	} *symbols = islower(**ipt) ? keywords : operators;
+	
+	size_t condition = sizeof(symbols) / sizeof(symbols[0]);
+	
+    for (int i = 0; i < condition; i++) {
+      char *key = symbols[i].key;
+	  if (ifMatch(ipt, key)){
+		  *ipt += strlen(key);
+		  readForward(ipt);
+		  //return symbols[i].value;
+	  }
+	  return key;
+	}
+	return -1;
 }
 
 Token *makeToken(int kind, Token *cur_token, char *ipt){
@@ -184,6 +230,3 @@ Token *makeToken(int kind, Token *cur_token, char *ipt){
   return new_token;
 }
 
-int *kwIdfr(char *ipt){//keyword identifier   
-    if()
-}
