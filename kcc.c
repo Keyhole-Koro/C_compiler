@@ -11,7 +11,7 @@ typedef enum {
   tk_eof
 } tokenkind;
 
-struct Token {
+static struct Token {
   tokenkind kind;
   int value;
   char symbol;
@@ -29,7 +29,7 @@ typedef enum {
   nd_rpths
 } nodesymbol;
 
-struct Node {
+static struct Node {
   nodesymbol symbol;
   int value;//only contains number
   struct Node *lnode;
@@ -107,8 +107,4 @@ int main(int argc, char **argv) {
   */
   return 0;
 }
-<<<<<<< HEAD
-
-=======
->>>>>>> c2ac85c2172e45d46f96f68b98e53bb5a1c9245e
 //add error exit(1)

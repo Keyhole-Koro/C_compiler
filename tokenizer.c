@@ -83,8 +83,8 @@ struct Token {
 };
 
 struct {
-  char *key;
-  int value;
+  char *Key;
+  int Value;
 } operators[] = {
   {"+", ADD},
   {"-", SUB},
@@ -115,8 +115,8 @@ struct {
 };//optimize later
 
 struct {
-  char *key;
-  int value;
+  char *Key;
+  int Value;
 } keywords[] = {
   {"sizeof", SIZEOF},
   {"bool", BOOL},
@@ -168,31 +168,46 @@ Token tokenize(char *input){
         ipt++;
         continue;
       } else {
-        idfd_kw = kwIdfr(&ipt);
+        idfd_kw = *ipt == '_' || ifAlphabet(ipt) ? kwIdfr(&ipt) : opIdfr(&ipt);//separate operator and keyword
       }
-
-      
     }
 }
 
-bool ifAlphabet_Num(char *letter) {
-	if ((*letter < 'a' || *letter > 'z') && (*letter < 'A' || *letter > 'Z') && (*letter < '0' || *letter > '9')) return true;
+bool ifAlphabet(char *letter) {
+	if ((*letter < 'a' || *letter > 'z') && (*letter < 'A' || *letter > 'Z')) return true;
 	return false;
 }
-char *readNext(char **ptr_letter)){
-	char *ptr_next_letter++;
-	if (!ifAlphabet_Num(**ptr_next_letter)) {
-		return NULL;
-	} else {
-		return readNext(*ptr_next_letter)
-	}
+
+bool ifAlphabet_Num(char *letter) {
+	if (ifAlphabet(letter) && (*letter < '0' || *letter > '9')) return true;
+	return false;
 }
-	
+
+char *readNextUntilSymbol(char **ptr_ptr_letter) {
+  (*ptr_ptr_letter)++;
+  if (!ifAlphabet_Num(*(*ptr_ptr_letter))) {
+    (*ptr_ptr_letter)--;
+    return *ptr_ptr_letter;
+  } else {
+    return readNext(ptr_ptr_letter);
+  }
+}
+
+char *readNextUntilNumber_underbar(char **ptr_ptr_letter) {
+  (*ptr_ptr_letter)++;
+  if (ifAlphabet_Num(*(*ptr_ptr_letter))) {
+    (*ptr_ptr_letter)--;
+    return *ptr_ptr_letter;
+  } else {
+    return readNext(ptr_ptr_letter);
+  }
+}
+
 bool ifMatch(char *target, char *pattern){
 	size_t target_length = strlen(target);
-    size_t pattern_length = strlen(pattern);
+  size_t pattern_length = strlen(pattern);
 
-    if (target_length > pattern_length) return false;
+  if (target_length > pattern_length) return false;
 	
 	if (strncmp(target, pattern, pattern_length) == 0) {
 		return true;
@@ -201,24 +216,51 @@ bool ifMatch(char *target, char *pattern){
 	}
 }
 
-int *kwIdfr(char **ipt){//keyword identifier
+int *kwIdfr(char **ipt){//keyword identifier returns keyword
 	struct {
-	  char *key;
-	  int value;
-	} *symbols = islower(**ipt) ? keywords : operators;
+	  char *Key;
+	  int Value;
+	} *symbols = keywords;
 	
 	size_t condition = sizeof(symbols) / sizeof(symbols[0]);
+  char *ipt_copy = *ipt;
+
+  int keyword = -1;
+  char *key;
+  for (int i = 0; i < condition; i++) {
+    key = symbols[i].key;
+    if (ifMatch(ipt_copy, key)){
+      keyword = key;
+      ipt_copy += strlen(key);
+      break;
+    }
+  }
+  if (*ipt_copy == '_' || ifAlphabet_Num(ipt_copy)) {//read next letter of key that is matched
+    keyword = VARIABLE;
+  }
+  return keyword;
+}
+
+int *opIdfr(char **ipt){
+  struct {
+	  char *Key;
+	  int Value;
+	} *symbols = operators;
 	
-    for (int i = 0; i < condition; i++) {
-      char *key = symbols[i].key;
-	  if (ifMatch(ipt, key)){
-		  *ipt += strlen(key);
-		  readForward(ipt);
-		  //return symbols[i].value;
-	  }
-	  return key;
-	}
-	return -1;
+	size_t condition = sizeof(symbols) / sizeof(symbols[0]);
+  char *ipt_copy = *ipt;
+
+  int keyword = -1;
+  char *key;
+  char *target = readNextUntilNumber_underbar(ipt_copy);
+  for (int i = 0; i < condition; i++) {
+    key = symbols[i].key;
+    if (ifMatch(target, key)){
+      keyword = key;
+      break;
+    }
+  }
+  return keyword;
 }
 
 Token *makeToken(int kind, Token *cur_token, char *ipt){
