@@ -5,6 +5,19 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "pseudoVector.c"
+
+/*
+         6
+    /    |    \
+    3   /6\    10
+  /|\   /|\   /|\
+ 2 n 4 2 n 8  8 n 13
+
+modify leter like this with number of ascii
+approxmetly O(logN)
+*/   
+
 enum {
     ADD,      // +
     SUB,      // -
@@ -30,7 +43,7 @@ enum {
     INC,      // ++
     DEC,      // --
 
-    POINTER,  // (*)
+    POINTER,  // *
     ADDRESS,  // &
     MEMBER,   // ->
     SIZEOF,   // sizeof
@@ -76,42 +89,15 @@ enum {
     R_BRACE,       // }
     L_BRACKET,     // [
     R_BRACKET,     // ]
-    L_ANGLE,       // <
-    R_ANGLE,       // >
-    AMPERSAND,     // &
     DOT,           // .
-    EXCLAMATION,   // !
     QUESTION,      // ?
     COLON,         // :
     VERTICAL_BAR,  // |
     CARET,         // ^
-    PERCENT,       // %
-    TILDE,         // ~
     HASH,          // #
 
     VARIABLE, //defined by user
 };
-
-typedef struct Token Token;
-
-typedef struct {
-  Token *token;
-  Buffer *buffer_idx;
-  int *data;
-  size_t capacity;
-  size_t size;
-  char *file_path;
-} Vector;
-
-typedef struct {
-  int tk;
-  //add other fields later
-} Token;
-
-typedef struct {
-  char *start_idx;
-  char *end_idx;
-} Buffer;
 
 struct KeyValue {
   char *Key;
@@ -119,31 +105,17 @@ struct KeyValue {
 };
 
 struct KeyValue operators[] = {
-  {"+", ADD},
-  {"-", SUB},
-  {"*", MUL},
-  {"/", DIV},
-  {"%", MOD},
-  {"=", ASSIGN},
   {"==", EQ},
   {"!=", NEQ},
-  {"<", LT},
-  {">", GT},
   {"<=", LTE},
   {">=", GTE},
   {"&&", AND},
-  {"||", OR},
-  {"!", NOT},
-  {"&", BITAND},
-  {"|", BITOR},
-  {"^", BITXOR},
-  {"~", BITNOT},
+  {"||", OR},  
   {"<<", SHL},
   {">>", SHR},
   {"++", INC},
   {"--", DEC},
   {"*", POINTER},
-  {"&", ADDRESS},
   {"->", MEMBER},
 };
 
@@ -180,7 +152,6 @@ struct KeyValue keywords[] = {
   {"union", UNION},
   {"enum", ENUM},
   {"sizeof", SIZEOF},
-  {"variable", VARIABLE},
 };
 
 struct KeyValue single_char[] = {
@@ -198,50 +169,25 @@ struct KeyValue single_char[] = {
   {"}", R_BRACE},
   {"[", L_BRACKET},
   {"]", R_BRACKET},
-  {"<", L_ANGLE},
-  {">", R_ANGLE},
-  {"&", AMPERSAND},
+  {"<", LT},
+  {">", GT},
   {".", DOT},
-  {"!", EXCLAMATION},
+  {"!", NOT},
   {"?", QUESTION},
   {":", COLON},
-  {"|", VERTICAL_BAR},
-  {"^", CARET},
-  {"~", TILDE},
+  {"|", BITOR},
+  {"^", BITXOR},
+  {"~", BITNOT},
   {"#", HASH},
+  {"&", BITAND},
 };
 
+bool isEndComment(char *letter);
 bool isIndentation(char *letter);
 bool isAlphabet_Num_Underbar(char *letter);
 bool isAlphabet(char *letter);
 bool isAlphabet_Underbar(char *letter);
 bool isAlphabet_Num(char *letter);
-
-Vector *createVector() {
-  Vector *vec = (Vector *)malloc(sizeof(Vector));
-  if (vec == NULL) {
-    perror("Failed to allocate memory for vector");
-    exit(EXIT_FAILURE);
-  }
-  vec->data = NULL;
-  vec->size = 0;
-  vec->capacity = 0;
-  return vec;
-}
-
-void pushBack(Vector *vec, int value) {
-  if (vec->size >= vec->capacity) {
-    size_t newCapacity = (vec->capacity == 0) ? 1 : vec->capacity * 2;
-    int *newData = (int *)realloc(vec->token, newCapacity * sizeof(int));
-    if (newData == NULL) {
-        perror("Failed to reallocate memory for vector");
-        exit(EXIT_FAILURE);
-    }
-    vec->data = newData;
-    vec->capacity = newCapacity;
-  }
-  vec->data[vec->size++] = value;
-}
 
 Token *makeToken(int kind, char *ipt){
   Token *new_token = calloc(1, sizeof(Token));
@@ -256,7 +202,7 @@ Buffer *makeBuffer(char *start_idx, char *end_idx){
   return new_buffer;
 }
 
-Token *tokenize(char *input) {
+Vector *tokenize(char *input) {
   Vector *vec = createVector();
 
   char *ipt = input;
@@ -288,21 +234,26 @@ Token *tokenize(char *input) {
       continue;
     }
 
-    if (strchr("+-*/;=(){},<>[]&.!?:|^%~#", *ipt)) {
+    if (strchr("+-*/;=(){},<>[]&.!?:|^%~#", *ipt) && !strchr("+-<>=&|", *ipt)) {
       idfd_vl = getValue(ipt++, 1, single_char);
       continue;
     }
 
     if (isAlphabet_Underbar(ipt)) {
       end_target = readNextUntil(isAlphabet_Num_Underbar, ipt);
-      idfd_vl = identifier(ipt, end_target - ipt, keywords, isAlphabet_Num_Underbar);
+      idfd_vl = identifier(ipt, end_target, keywords, isAlphabet_Num_Underbar);
       ipt = ++end_target;
       continue;
     }
     
     if (!isAlphabet_Num_Underbar(ipt)) {
       end_target = readNextUntil(!isAlphabet_Num_Underbar, ipt);
-      idfd_vl = identifier(ipt, end_target - ipt, operators, !isAlphabet_Num_Underbar);
+      untilMatch:
+      idfd_vl = identifier(ipt, end_target, operators, !isAlphabet_Num_Underbar);
+      if (idfd_vl == NULL) {//when it couldnt find
+        end_target--;
+        goto untilMatch;
+      }
       ipt = ++end_target;
       continue;
     }
@@ -359,12 +310,16 @@ bool ifMatch(char *target, char *pattern, size_t read_size){
 	return false;
 }
 
-int identifier(char *ipt, size_t length_target, struct KeyValue *symbols, bool (*condition)(char)) {
+int identifier(char *ipt, char *end_target, struct KeyValue *symbols, bool (*condition)(char)) {
+  if (end_target >= ipt) return NULL;
+
+  size_t length_target = end_target - ipt;
+
   int value = getValue(ipt, length_target, symbols);
 
   if (value != -1) return value;
 
-  return VARIABLE; // Default to VARIABLE if no keyword/operator is matched
+  return NULL;
 }
 
 int getValue(char *substring, size_t substring_length, struct KeyValue *symbols) {
