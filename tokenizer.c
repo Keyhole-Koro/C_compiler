@@ -96,7 +96,9 @@ enum {
     CARET,         // ^
     HASH,          // #
 
-    VARIABLE, //defined by user
+    NUMBER, //number
+
+    IDENTIFIER, //defined by user
 };
 
 struct KeyValue {
@@ -331,6 +333,10 @@ int getValue(char *substring, size_t substring_length, struct KeyValue *symbols)
     }
   }
   return -1;
+}
+
+void initialize() {
+
 }
 
 int main() {
