@@ -17,35 +17,57 @@ enum {
     EXPR, // E
     TERM, // T
     FACTOR, // F
+    ACCEPTED, //accept
+    
+    S,  // shift
+    R, // reducce
+    G, //goto
+    ACC, //acc
 };
 
 typedef struct {
-    char *left;
+    int left;
     char *right;
     int numChar;
     int columnTable;
 } Production;
 
 typedef struct {
-    int *column;
+    int column;
     int symbol;
-}
+} Columns;
+
+typedef struct {
+    int SRGA;
+    int Item;
+} Action;
 
 Production productions[] = {
-    {"E", "E$", 2, 8},
-    {"E", "E+T", 3, 8},
-    {"E", "E-T", 3, 8},
-    {"E", "T",1 , 8},
-    {"T", "T*F", 3, 9},
-    {"T", "T/F", 3, 9},
-    {"T", "F", 1, 9},
-    {"F", "(E)", 3, 10},
-    {"F", "num", 1, 10}
-    };
+    {EXPR, "E$", 2, 8},
+    {EXPR, "E+T", 3, 8},
+    {EXPR, "E-T", 3, 8},
+    {EXPR, "T",1 , 8},
+    {TERM, "T*F", 3, 9},
+    {TERM, "T/F", 3, 9},
+    {TERM, "F", 1, 9},
+    {FACTOR, "(E)", 3, 10},
+    {FACTOR, "num", 1, 10}
+};
 
+Columns columns[] = {
+    {0, NUM},
+    {1, ADD},
+    {2, SUB},
+    {3, MUL},
+    {4, DIV},
+    {5, L_PARENTHESES},
+    {6, R_PARENTHESES},
+    {7, ACCEPTED},
+    {8, EXPR},
+    {9, TERM},
+    {10, FACTOR},
+};
 
-
-int *symbols[] = {NUM, ADD, SUB, MUL, DIV, L_PARENTHESES, R_PARENTHESES};
 int numSymbols = 7;
 
 int stack[100];
@@ -56,29 +78,46 @@ int size_result = 0;
 
 
 
-char *table[][17] = {
+Action table[][17] = {
 //    id   +  -  *  /  (  )  $  E  T  F
-    {"s5","","","","","s2","","","1","3","4"},
-    {"","s6","s7","","","","","","acc","",""},
-    {"s5","","","","","","","","8","3","4"},
-    {"","r4","r4","r9","r10","","r4","r4","","",""},
-    {"","r7","r7","r7","r7","","r7","r7","","",""},
-    {"","r9","r9","r9","r9","","r9","r9","","",""},
-    {"s5","","","","","s2","","","","11","4"},
-    {"s5","","","","","s2","","","","12","4"},
-    {"","s6","s8","","","","s13","","","",""},
-    {"s5","","","","","s2","","","","","14"},
-    {"s5","","","","","","s2","","","","15"},
-    {"","r2","r2","s9","s10","","r2","r2","","",""},
-    {"","r3","r3","s9","s10","","r3","r3","","",""},
-    {"","r8","r8","r8","r8","","r8","r8","","",""},
-    {"","r5","r5","r5","r5","","r5","r5","","",""},
-    {"","r6","r6","r6","r6","","r6","r6","","",""}
-};
+    { {S, 5}, {}, {}, {}, {}, {S, 2}, {}, {}, {G, 1}, {G, 3}, {G, 4} },//0
+    { {}, {S, 6}, {S, 7}, {}, {}, {}, {}, {ACC, 0}, {}, {}, {} },//1
+    { {S, 5}, {}, {}, {}, {}, {}, {}, {}, {G, 8}, {G, 3}, {G, 4} },//2
+    { {}, {R, 3}, {R, 3}, {R, 8}, {R, 9}, {}, {R, 3}, {R, 3}, {}, {}, {} },//3
+    { {}, {R, 6}, {R, 6}, {R, 6}, {R, 6}, {}, {R, 6}, {R, 6}, {}, {}, {} },//4
+    { {}, {R, 8}, {R, 8}, {R, 8}, {R, 8}, {}, {R, 8}, {R, 8}, {}, {}, {} },//5
+    { {S, 5}, {}, {}, {}, {}, {S, 2}, {}, {}, {}, {G, 10}, {G, 4} },//6
+    { {S, 5}, {}, {}, {}, {}, {S, 2}, {}, {}, {}, {G, 11}, {G, 4} },//7
+    { {}, {S, 6}, {S, 8}, {}, {}, {}, {S, 12}, {}, {}, {}, {} },//8
+    { {S, 5}, {}, {}, {}, {}, {S, 2}, {}, {}, {}, {}, {G, 13} },//9
+    { {S, 5}, {}, {}, {}, {}, {}, {S, 2}, {}, {}, {}, {G, 14} },//10
+    { {}, {R, 1}, {R, 1}, {S, 8}, {S, 9}, {}, {R, 1}, {R, 1}, {}, {}, {} },//11
+    { {}, {R, 2}, {R, 2}, {S, 8}, {S, 9}, {}, {R, 2}, {R, 2}, {}, {}, {} },//12
+    { {}, {R, 7}, {R, 7}, {R, 7}, {R, 7}, {}, {R, 7}, {R, 7}, {}, {}, {} },//13
+    { {}, {R, 4}, {R, 4}, {R, 4}, {R, 4}, {}, {R, 4}, {R, 4}, {}, {}, {} },//14
+    { {}, {R, 5}, {R, 5}, {R, 5}, {R, 5}, {}, {R, 5}, {R, 5}, {}, {}, {} }//15
+    };
 
-bool isNum(char *letter) {
-	if (*letter < '0' || *letter > '9') return true;
-	return false;
+int getSymbolIndex(int *symbol) {
+    for (int i = 0; i < sizeof(columns) / sizeof(columns[0]); i++) {
+        if (columns[i].symbol == *symbol) {
+            return columns[i].column;
+        }
+    }
+    return -1;
+}
+
+Action readAction(int row, int column){
+    Action action = table[row][column];
+    return action;
+}
+
+void addResult(int ipt) {
+    result[size_result++] = ipt;
+}
+
+int getLastResult() {
+    return result[size_result];
 }
 
 int getTop(){
@@ -93,74 +132,86 @@ int pop() {
     return stack[top--];
 }
 
-int getSymbolIndex(int symbol) {
-    for (int i = 0; i < sizeof(symbols) / sizeof(symbols[0]); i++) {
-        if (symbols[i] == symbol) {
-            return i;
-        }
-    }
-    return -1;
-}
-
-char *readAction(char *ipt){
-    int row = getTop();//state
-    int column = getSymbolIndex(ipt);//symbol
-    char *action = table[row][column];
-    ipt++;
-    return action;
-}
-
-char *removePrefix(char *ipt) {
-    int length = strlen(ipt);
-    char *removed_char = ipt[1, length-1];//maybe it starts with 1
-    return removed_char;
-}
-
-void addResult(int *ipt) {
-    result[size_result++] = ipt;
-}
-
-int getLateResult() {
-    return result[size_result];
-}
-
 void popAtOnce(int num) {
     for (int i = 0; i < num; i++) {
         top--;
     }
 }
 
-int *parse(int *ipt){
-    char *action;
-    char *prefix;
-    int next_state;
-    int nlp;
-    char *non_terminal;
-    push(0);
-    while(*ipt) {
-        action = readAction(ipt);
-        prefix = action[0];//head of action like r s , goto is gonna be number
-        if (*prefix == "s") {
-            next_state = removePrefix(action) - '0';
-            push(next_state);
-            ipt++;
-            continue;
-        } else if (*prefix == "r") {
-            addResult(removePrefix(action) - '0');
-            nlp = productions[getLateResult()].numChar;
-            popAtOnce(nlp);
-            action = table[getTop()][productions[getLateResult()].columnTable];
-        } else if (isNum(prefix)) {
-            next_state = removePrefix(action) - '0';
-            push(next_state);
-        }else if (*prefix == "a") {
+void displayStack() {
+    printf("[");
+    printf("Stack contents: ");
+    for (int i = 0; i <= top; i++) {
+        printf("%d ", stack[i]);
+    }
+    printf("]");
+}
 
+
+int *parse(int *ipt){
+    Action action;
+    int prefix;
+    int state;
+    int next_state;
+    int length_syntax;//such as E+T is 3
+    int sym;
+    int non_terminal;
+    action = readAction(2, 9);
+    push(0);
+    //printf("[%d]", *ipt);
+    action = readAction(getTop(), getSymbolIndex(ipt));
+    for (int i = 0; i < 20; i++) {
+        prefix = action.SRGA;
+        //printf("[%d]", *ipt);
+        displayStack();
+        if (prefix == 11) printf("S");
+        if (prefix == 12) printf("R");
+        if (prefix == 13) printf("G");
+        printf("%d", action.Item);
+        printf("\n");
+        
+        //printf("[%d]", *ipt);
+        if (prefix == S) {
+            next_state = action.Item;
+            push(next_state);
+            action = readAction(getTop(), getSymbolIndex(++ipt));
+            continue;
+        }
+        if (prefix == R) {
+            state = action.Item;
+            addResult(state);
+            
+            length_syntax = productions[state].numChar;
+            //printf("(%d|%d|", getTop(), length_syntax);
+            popAtOnce(length_syntax);
+            //printf("%d)", getTop());
+            
+            non_terminal = productions[state].left;
+            
+            
+            //printf("[%d|%d]", getTop(), getSymbolIndex(&non_terminal));
+            action = readAction(getTop(), getSymbolIndex(&non_terminal));
+            continue;
+        }
+        if (prefix == G) {
+            next_state = action.Item;
+            push(next_state);
+            
+            action = readAction(getTop(), getSymbolIndex(ipt));
+            continue;
+        }
+        if (prefix == ACC) {
+            printf("ACCEPTED");
+            break;
         }
     }
+    return result;
 }
 
 int main(){
-    int *input[] = {L_PARENTHESES, NUM, ADD, NUM, R_PARENTHESES, DIV, NUM};
-    int parsed = parse(input);
+    int input[] = {L_PARENTHESES, NUM, ADD, NUM, R_PARENTHESES, DIV, NUM};
+    int *input_ptr = input;
+    int *parsed = parse(input_ptr);
+    printf("/n");
     return 0;
 }
