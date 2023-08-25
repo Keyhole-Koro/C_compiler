@@ -73,7 +73,7 @@ int numSymbols = 7;
 int stack[100];
 int top = -1;
 
-int result[] = {};
+int result[100];
 int size_result = 0;
 
 
@@ -139,11 +139,13 @@ void popAtOnce(int num) {
 }
 
 void displayStack() {
-    printf("[");
-    printf("Stack contents: ");
+    printf("[Stack contents: ");
+    
     for (int i = 0; i <= top; i++) {
-        printf("%d ", stack[i]);
+        int state = stack[i];
+        printf("%d ", state);
     }
+    
     printf("]");
 }
 
@@ -163,33 +165,30 @@ int *parse(int *ipt){
     for (int i = 0; i < 20; i++) {
         prefix = action.SRGA;
         //printf("[%d]", *ipt);
-        displayStack();
+        
+        printf("\n");
         if (prefix == 11) printf("S");
         if (prefix == 12) printf("R");
         if (prefix == 13) printf("G");
         printf("%d", action.Item);
-        printf("\n");
+        displayStack();
         
         //printf("[%d]", *ipt);
         if (prefix == S) {
             next_state = action.Item;
             push(next_state);
+            
             action = readAction(getTop(), getSymbolIndex(++ipt));
             continue;
         }
         if (prefix == R) {
             state = action.Item;
             addResult(state);
-            
             length_syntax = productions[state].numChar;
-            //printf("(%d|%d|", getTop(), length_syntax);
-            popAtOnce(length_syntax);
-            //printf("%d)", getTop());
             
+            popAtOnce(length_syntax);
             non_terminal = productions[state].left;
             
-            
-            //printf("[%d|%d]", getTop(), getSymbolIndex(&non_terminal));
             action = readAction(getTop(), getSymbolIndex(&non_terminal));
             continue;
         }
