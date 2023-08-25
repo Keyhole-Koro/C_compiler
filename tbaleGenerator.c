@@ -147,49 +147,32 @@ int *extractNonTerminal(Production *prodArray[]) {
     nonTerminalArray = (int *)realloc(nonTerminalArray, numNonTerminals * sizeof(int));
     return nonTerminalArray;
 }
-/*
-Production *getProdLeftIs(int symbol) {
+
+Production *getProdLeftIs(int non_terminals[]) {
     Production *matchedProdArray = (Production *)malloc(ARRAY_LENGTH(productions) * sizeof(Production));
     if (matchedProdArray == NULL) return NULL;
     int prods_index = -1;
-
-    for (int i = 0; i < ARRAY_LENGTH(productions) != NULL; i++) {
-        if (productions[i].left == symbol) {
-            matchedProdArray[++prods_index] = productions[i];
+    for (int i = 0; i < sizeof(non_terminals); i++) {
+        for (int j = 0; j < ARRAY_LENGTH(productions) != NULL; j++) {
+        if (productions[i].left == non_terminals[i]) {
+            matchedProdArray[++prods_index] = productions[j];
         }
+    }
     }
     matchedProdArray[++prods_index] = (Production){0, NULL, 0};
     matchedProdArray = (Production *)realloc(matchedProdArray, (prods_index + 1) * sizeof(Production));
     return matchedProdArray;
 }
-*/
+
 Production *gatherNeededProds(Production *referenced_prods[]) {
     int *non_terminals = extractNonTerminal(referenced_prods);
-    if (non_terminals == NULL) return NULL;
+    if (*non_terminals == NULL) return NULL;
+    int *fetched_prods;
 
-    Production *allFetchedProds = NULL;
-    int totalFetchedProds = 0;
-
-    for (int i = 0; non_terminals[i] != 0; i++) {
-        Production *fetched_prods = getProdLeftIs(non_terminals[i]);
-        if (fetched_prods == NULL) {
-            free(allFetchedProds);
-            return NULL;
-        }
-        int numFetchedProds = ARRAY_LENGTH(fetched_prods);
-        allFetchedProds = (Production *)realloc(allFetchedProds, (totalFetchedProds + numFetchedProds + 1) * sizeof(Production));
-        if (allFetchedProds == NULL) {
-            free(fetched_prods);
-            return NULL;
-        }
-        for (int j = 0; j < numFetchedProds; j++) {
-            allFetchedProds[totalFetchedProds++] = fetched_prods[j];
-        }
-        free(fetched_prods);
-    }
-    allFetchedProds[totalFetchedProds] = (Production){0, NULL, 0};
-
-    return allFetchedProds;
+    fetched_prods = getProdLeftIs(non_terminals);
+    
+    if (ARRAY_LENGTH(referenced_prods) == ARRAY_LENGTH(fetched_prods)) return fetched_prods;
+    return gatherNeededProds(fetched_prods);
 }
 
 Item *createItem(Production *referenced_prods[], int readSymbol){
@@ -199,7 +182,7 @@ Item *createItem(Production *referenced_prods[], int readSymbol){
     int num_item = 0;
 
     Production *nessesaryProds = gatherNeededProds(referenced_prods);
-
+    //have yet to implement dot
     int *symbols = getSymbol(prodArray);
     for (int i = 0; i < ARRAY_LENGTH(symbols); i++) {
         createItem();
