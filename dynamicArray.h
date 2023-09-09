@@ -1,9 +1,9 @@
 // dynamic_array.h
-
-#include "commonData.h"
-
 #ifndef DYNAMIC_ARRAY_H
 #define DYNAMIC_ARRAY_H
+
+#include "commonData.h"
+//#include "utilities.h"
 
 typedef union {
     int *intData;
@@ -13,13 +13,13 @@ typedef union {
 
 typedef struct {
     Type type;
-    Data data;
+    Data *data;
     int offset;
     int capacity;
 } DynamicArray;
 
-DynamicArray createDynamicArray(int initialCapacity, size_t elementSize);
-void append(DynamicArray *arr, const void *element);
+DynamicArray createDynamicArray(int initialCapacity, Type type);
+void append(DynamicArray *arr, void *element, Type type);
 void destroyDynamicArray(DynamicArray *arr);
 
 #endif
