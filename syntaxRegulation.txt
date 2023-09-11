@@ -1,0 +1,116 @@
+Program -> Function
+            | Statement
+            | Expression
+
+Expression -> AssignmentExpression
+                | ConditionalExpression
+
+AssignmentExpression -> UnaryExpression '=' AssignmentExpression
+                        | ConditionalExpression
+
+ConditionalExpression -> LogicalOrExpression '?' Expression ':' ConditionalExpression
+                        | LogicalOrExpression
+
+LogicalOrExpression -> LogicalAndExpression
+                        | LogicalOrExpression '||' LogicalAndExpression
+
+LogicalAndExpression -> InclusiveOrExpression
+                        | LogicalAndExpression '&&' InclusiveOrExpression
+
+InclusiveOrExpression -> ExclusiveOrExpression
+                        | InclusiveOrExpression '|' ExclusiveOrExpression
+
+ExclusiveOrExpression -> AndExpression
+                        | ExclusiveOrExpression '^' AndExpression
+
+AndExpression -> EqualityExpression
+                        | AndExpression '&' EqualityExpression
+
+EqualityExpression -> RelationalExpression
+                        | EqualityExpression '==' RelationalExpression
+                        | EqualityExpression '!=' RelationalExpression
+
+RelationalExpression -> ShiftExpression
+                        | RelationalExpression '<' ShiftExpression
+                        | RelationalExpression '>' ShiftExpression
+                        | RelationalExpression '<=' ShiftExpression
+                        | RelationalExpression '>=' ShiftExpression
+
+ShiftExpression -> AdditiveExpression
+                        | ShiftExpression '<<' AdditiveExpression
+                        | ShiftExpression '>>' AdditiveExpression
+
+AdditiveExpression -> MultiplicativeExpression
+                        | AdditiveExpression '+' MultiplicativeExpression
+                        | AdditiveExpression '-' MultiplicativeExpression
+
+MultiplicativeExpression -> CastExpression
+                        | MultiplicativeExpression '*' CastExpression
+                        | MultiplicativeExpression '/' CastExpression
+                        | MultiplicativeExpression '%' CastExpression
+
+CastExpression -> UnaryExpression
+                    | '(' TypeName ')' CastExpression
+
+UnaryExpression -> PrimaryExpression
+                    | PointerExpression
+
+PointerExpression -> UnaryExpression
+                    | '&' UnaryExpression
+                    | PointerExpression '*' UnaryExpression
+                    | PointerExpression '[' Expression ']'
+                    | PointerExpression '->' Identifier
+
+PrimaryExpression -> Identifier | Constant | '(' Expression ')'
+
+Constant -> IntegerConstant
+            | CharacterConstant
+            | StringLiteral
+
+IntegerConstant -> [0-9]+
+
+CharacterConstant -> '\'' [A-Za-z0-9_] '\''
+
+StringLiteral -> '"' [^"\n]* '"'
+
+Statement -> ExpressionStatement
+            | CompoundStatement
+            | SelectionStatement
+            | IterationStatement
+            | JumpStatement
+            | DeclarationStatement
+            | LabeledStatement
+
+ExpressionStatement -> Expression ';'
+
+CompoundStatement -> '{' DeclarationList? StatementList? '}'
+
+SelectionStatement -> 'if' '(' Expression ')' Statement ('else' Statement)?
+
+IterationStatement -> 'while' '(' Expression ')' Statement
+        | 'for' '(' ExpressionStatement? ';' ExpressionStatement? ';' Expression? ')' Statement
+
+JumpStatement -> 'return' Expression? ';'
+                | 'break' ';'
+                | 'continue' ';'
+                | 'goto' Identifier ';'
+
+DeclarationStatement -> Declaration ';'
+
+LabeledStatement -> Identifier ':' Statement
+
+Declaration -> TypeSpecifier Identifier
+
+TypeSpecifier -> 'int' | 'char' | 'float' | 'double' | 'void' | ... (other data types)
+
+Identifier -> [A-Za-z_][A-Za-z0-9_]*
+
+Function -> TypeSpecifier Identifier '(' ParameterList ')' CompoundStatement
+
+ParameterList -> ParameterDeclaration (',' ParameterDeclaration)*| 'void'
+
+ParameterDeclaration -> TypeSpecifier Identifier
+
+DeclarationList -> Declaration DeclarationList | (empty)
+
+StatementList -> Statement StatementList | (empty)
