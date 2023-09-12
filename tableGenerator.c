@@ -40,98 +40,146 @@ int numItems = 0;
 //{EXPR, ADD, TERM}
 //   0    1     2
 Production productions[] = {
-    {EXPR, {EXPR, END}, 0},
-    {EXPR, {EXPR, ADD, TERM}, 0},
-    {EXPR, {EXPR, SUB, TERM}, 0},
-    {EXPR, {TERM}, 0},
-    {TERM, {TERM, MUL, FACTOR}, 0},
-    {TERM, {TERM, DIV, FACTOR}, 0},
-    {TERM, {FACTOR}, 0},
-    {FACTOR, {L_PARENTHESES, EXPR, R_PARENTHESES}, 0},
-    {FACTOR, {NUM}, 0}
+    {0, EXPR, {EXPR, END}, 0, EXPR},
+    {1, EXPR, {EXPR, ADD, TERM}, 0, EXPR},
+    {2, EXPR, {EXPR, SUB, TERM}, 0, EXPR},
+    {3, EXPR, {TERM}, 0, TERM},
+    {4, TERM, {TERM, MUL, FACTOR}, 0, TERM},
+    {5, TERM, {TERM, DIV, FACTOR}, 0, TERM},
+    {6, TERM, {FACTOR}, 0, FACTOR},
+    {7, FACTOR, {L_PARENTHESES, EXPR, R_PARENTHESES}, 0, L_PARENTHESES},
+    {8, FACTOR, {NUM}, 0, NUM}
 };
 
-//implement calloc later
-//use NULL indicates the end
+int partition(DynamicArray* arr, int low, int high) {
+    int pivot = arr[high]->cur_symbol;
+    int i = (low - 1);
 
-//implement array functions makeArray append getArray
-
-Production *getProdStartWith(int symbol) {//when just after dot is non-terminal, this is called
-    Production *prodArray = (Production *)malloc(ARRAY_LENGTH(productions) * sizeof(Production));
-    int numMatches = 0;
-
-    for (int i = 0; i < ARRAY_LENGTH(productions); i++) {
-        if (productions[i].left == symbol) {
-            prodArray[numMatches++] = &productions[i];
+    for (int j = low; j <= high - 1; j++) {
+        if (arr[j]->cur_symbol < pivot) {
+            i++;
+            swapElements(arr[i], arr[j]);
         }
     }
-    prodArray[numMatches] = (Production){0, NULL, 0};
-    prodArray = (Production *)realloc(prodArray, (numMatches) * sizeof(Production));
-    return prodArray;//you cant return stack values
+    swapElements(arr[i + 1], arr[high]);
+    return (i + 1);
 }
-/*
-Production *fetchProductions(Production prod) {//give specific name
-    
-}
-*/
 
-bool isOverlap(int *array, int size, int symbol) {
-    for (int i = 0; i < size; i++) {
-        if (*array[i] == symbol) return false;
+//sort productions according the number of symbols
+void sortProd(DynamicArray* arr, int low, int high) {
+    if (low < high) {
+        int pi = partition(arr, low, high);
+
+        sortProd(arr, low, pi - 1);
+        sortProd(arr, pi + 1, high);
+    }
+}
+
+int getCurSymbol(Data* prod) {
+    return prod->cur_symbol;
+}
+DynamicArray *insertProds(DynamicArray *arr, Type type) {
+    arr->data = malloc(initialCapacity * getDataSize(type));
+    if (arr->data == NULL) error("Memory allocation failed\n");
+    
+    for (int i = 0; i < sizeof(productions); i++) {
+        append(arr, &productions[i], PRODUCTION);
+    }
+    return arr;
+}
+
+void setSymbol(DynamicArray *prodArr, Type type) {
+    if (type != PRODUCTION) error("type mismatch\n");
+    for (int i = 0; i < getOffset(prodArr); i++) {
+        int pos = prodArr[i]->readPosition;
+        int symbol = prodArr[i]->left[pos];
+        prodArr[i]->cur_symbol = symbol;
+    }
+}
+
+void incrementPosition(DynamicArray *prodArr, Type type) {
+    if (type != PRODUCTION) error("type mismatch\n");
+    for (int i = 0; i < getOffset(prodArr); i++) {
+        prodArr[i]->readPosition ++;
+    }
+}
+
+bool isOverlap(DynamicArray *symbolArr, int symbol, Type type) {
+    if (type != INT) error("type mismatch\n");
+    for (int i = 0; i < getOffset(symbolArr); i++) {
+        if (*symbolArr[i] == symbol) return false;
     }
     return true;
 }
 
-int *getSymbol(Production *prods) {
-    int *symbolArray[] = {};
-    for (int i = 0; i < ARRAY_LENGTH(prods); i++) {
-        if (isOverlap(prods, ARRAY_LENGTH(prods), prods[i])) {
-            symbolArray[ARRAY_LENGTH(symbolArray)] = prods[i];
-        }
-    }
-    return symbolArray;
-}
-
-Production *gatherProdRightStartWith(int *non_terminals[]) {    
-    Production *prodArray = (Production *)malloc(fetchedProds * sizeof(Production));
-    if (prodArray == NULL) return NULL;
-    return prodArray;
-}
-
-void removeElement(Production arr[], int i) {
+void removeElement(DynamicArray *arr, int i) {
     arr[i] = (Production){NULL, {NULL}, NULL};
 }
 
+Data *copyProdbutPointer(int num_prod) {
+    Data *duplicated_prod = (Data *)malloc(sizeof(Production));
+    *duplicated_prod = productions[num_prod];
+    return duplicated_prod;
+}
+/*
+ fetchedProdArray:
+ duplicatedProdsArray: 0 1 2 3 4 5
+ originalProd: 0 1 2 3 4 5
+ ----
+ fetchedProdArray: 2
+ duplicatedProdsArray: 0 1 5 3 4 N
+ originalProd: 0 1 2 3 4 5
+ */
 //this one extract single kind of prods
-int appendProdLeftIs(DynamicArray *prodArray, DynamicArray *copiedProdsArray, int expectedSymbol, int beginning_point) {
-    for (int i = beginning_point; i > 0; i--) {
-        if (copiedProdsArray[i]->left == expectedSymbol) {
-            append(prodArray, productions[i], PRODUCTION);
-            remove(copiedProdsArray, i);
-            int no_meaning = appendProdLeftIs(prodArray, copiedProdsArray, expectedSymbol, i - 1);
+void appendProdLeftIs(DynamicArray *fetchedProdArray, DynamicArray *duplicatedProdsArray, DynamicArray *fetchedSymbols, int expectedSymbol) {
+    int condition = getOffset(duplicatedProdsArray);
+    for (int i = 0; i > condition; i++) {
+        if (duplicatedProdsArray[i]->left == expectedSymbol) {
+            append(fetchedProdArray, &productions[i], PRODUCTION);
+            remove(duplicatedProdsArray, i);
         }
     }
-    return 0;
+}
+
+/*
+ fetchedSymbols: E T F
+ F apperd
+ ----
+ fetchedSymbols: F T E
+ */
+bool cmpSymbol(Data *data, Data *expectedValue) {
+    int *symbol = (int *)data;
+    int *compedValue = (int *)expectedValue;
+    return *symbol == *compedValue;
 }
 
 //this one extracts multiple kind of prods
-void *extractNessesaryProds(DynamicArray *prodArray, Production *copiedProdsArray) {
-    for (int i = 0; i < getOffset(prodArray) + 1; i++) {
-        if (prodArray[i].left == NULL) continue;
+void *extractNessesaryProds(DynamicArray *fetchedProdArray, Production *duplicatedProdsArray) {
+    DynamicArray *fetchedSymbolArray = createDynamicArray(5, int);
+    for (int i = 0; i < getOffset(fetchedProdArray) + 1; i++) {
+        if (fetchedProdArray[i].left == NULL) continue;
                         
-        int pos = prodArray[i]->readPosition;
-        int symbol = prodArray[i]->right[pos];
+        int symbol = fetchedProdArray[i]->cur_symbol;
         
-        if (!isNonTerminal(symbol)) continue;
-                
-        int no_meaning = appendProdLeftIs(prodArray, copiedProdsArray, symbol, getOffset(copiedProdsArray));
+        if (!isNonTerminal(symbol) || isOverlap(fechedSymbolArray, symbol, INT) continue;
+        
+        append(fetchedSymbols, &symbol, INT);
+        
+        int pos_symbol = fetchPosition(fetchedSymbols, cmpSymbol, (Data *)&symbol, INT)
+        
+        if (getOffset(fetchedSymbols) >= 2) swapElements(fetchedSymbols, pos_symbol, getOffset(fetchedSymbols));
+        
+        appendProdLeftIs(fetchedProdArray, duplicatedProdsArray, symbol, fetchedSymbols, getOffset(duplicatedProdsArray));
     }
 }
 //the copying prod takes much time
-Item *createItem(DynamicArray *darr, Production *requiredProdArray, int readSymbol){
-    Production *copiedProdsArray = (Production *)malloc(ARRAY_LENGTH(Productions) * sizeof(Production));
-    *copiedProdsArray = productions;
-    extractNessesaryProds(requiredProdArray, copiedProdsArray);
+Item *createItem(DynamicArray *itemArray, DynamicArray *fetchedProdArray, int readSymbol){
+    int size = ARRAY_LENGTH(Productions) * sizeof(Production);
+    DynamicArray *duplicatedProdsArray = createDynamicArray(size, PRODUCTION);
+    insertProds(duplicatedProdsArray, PRODUCTION);
+    sortProd(duplicatedProdsArray, 0, getOffset(duplicatedProdsArray) - 1);
+    
+    extractNessesaryProds(fetchedProdArray, duplicatedProdsArray);
     
     //have yet to implement dot
     int *symbols = getSymbol(prodArray);
@@ -145,18 +193,18 @@ Item *createItem(DynamicArray *darr, Production *requiredProdArray, int readSymb
     new_item->Productions = prodArray;
     new_item->transitionDestinations = itemArray;
         
-    append(darr, new_item, ITEM);
+    append(itemArray, new_item, ITEM);
     
-    free(copiedProd);
+    free(duplicatedProd);
 }
 
 int main() {
     DynamicArray *itemArray = createDynamicArray(10, ITEM);
     
-    DynamicArray *requiredProdArray = createDybamicArray(10, PRODUCTION);
-    append(requiredProdArray, &productions[0], PRODUCTION);
+    DynamicArray *fetchedProdArray = createDybamicArray(10, PRODUCTION);
+    append(fetchedProdArray, &productions[0], PRODUCTION);
 
-    Item *first_item = createItem(itemArray, requiredProdArray, EXPR);//temporary
+    Item *first_item = createItem(itemArray, fetchedProdArray, EXPR);//temporary
     
     
 }

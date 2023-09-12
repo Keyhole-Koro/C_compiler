@@ -9,9 +9,11 @@
 //#include "commonData.h"
 
 typedef struct {
+    int n;
     int left;
-    int *right; // modify later
+    int* right; // modify later
     int readPosition;
+    int cur_symbol;
 } Production;
 
 typedef struct Item {
