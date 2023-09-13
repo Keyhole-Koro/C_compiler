@@ -17,3 +17,8 @@ size_t getDataSize(Type tp) {
     }
     return 0;
 }
+
+void error(char ch[]) {
+    fprintf(stderr, "%s", ch);
+    exit(1);
+}

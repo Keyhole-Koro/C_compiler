@@ -7,12 +7,7 @@
 #include "dynamicArray.h"
 #include "utilities.h"
 
-void error(const char ch[]) {
-    fprintf(stderr, "%s", ch);
-    exit(1);
-}
-
-DynamicArray* createDynamicArray(int initialCapacity, Type type) {
+DynamicArray *createDynamicArray(int initialCapacity, Type type) {
     DynamicArray* arr = malloc(sizeof(DynamicArray));
     if (arr == NULL) error("Memory allocation failed\n");
     arr->data = malloc(initialCapacity * getDataSize(type));
@@ -23,39 +18,47 @@ DynamicArray* createDynamicArray(int initialCapacity, Type type) {
     return arr;
 }
 
-void append(DynamicArray* arr, void* element, Type type) {
-    if (type != arr->type) error("type mismatch\n");
+void append(DynamicArray* arr, void *element, Type type) {
+    if (type != arr->type) error("type mismatch: append\n");
 
     if (arr->offset == arr->capacity) {
         arr->capacity *= 2;
         arr->data = realloc(arr->data, arr->capacity * getDataSize(type));
         if (arr->data == NULL) error("Memory allocation failed\n");
     }
-    arr->data[arr->offset++] = *((Data*)element);
+    memcpy(&(arr->data[arr->offset++]), element, getDataSize(type));
+    
 }
 
-//swqp
-void swapElement(DynamicArray* arr, int pos1, int pos2, Type type) {
-    if (type != arr->type) error("types don't match");
+void swapElement(DynamicArray *arr, int pos1, int pos2, Type type) {
+    if (type != arr->type) error("type mismatch: swapElement\n");
 
+    if (pos1 < 0 || pos1 >= arr->offset || pos2 < 0 || pos2 >= arr->offset) error("Index out of bounds: swapElement\n");
 
-    if (pos1 < 0 || pos1 >= arr->offset || pos2 < 0 || pos2 >= arr->offset) error("Index out of bounds\n");
+    size_t dataSize = getDataSize(type);
 
-    Data* element1 = getData(arr, pos1, type);
-    Data* temp_element1 = element1;
-    Data* element2 = getData(arr, pos2, type);
-    element1 = element2;
-    element2 = temp_element1;
+    Data *element1 = getData(arr, pos1, type);
+    Data *element2 = getData(arr, pos2, type);
+
+    Data *temp_element1 = (Data *)malloc(dataSize);
+    memcpy(temp_element1, element1, dataSize);
+    memcpy(element1, element2, dataSize);
+    memcpy(element2, temp_element1, dataSize);
+    if (type == PRODUCTION) {
+        Production *prod = (Production *)element1;
+        printf("ssssssssssssssss: %d, %d\n", prod->n, prod->cur_symbol);
+    }
 }
+
 
 void destroyDynamicArray(DynamicArray* arr) {
     free(arr->data);
     free(arr);
 }
 //add safety
-bool cmpStateId(Data* data, Data* expectedValue) {
-    Item* item = (Item*)data;
-    int* compedValue = (int*)expectedValue;
+bool cmpStateId(Data *data, Data *expectedValue) {
+    Item *item = (Item*)data;
+    int *compedValue = (int*)expectedValue;
     return item->stateId == *compedValue;
 }
 
@@ -65,20 +68,24 @@ bool cmpTransitionedSymbol(Data* data, Data* expectedValue) {
     return item->transitionedSymbol == *compedValue;
 }
 
-Data* getData(DynamicArray* arr, int pos, Type type) {
-    if (type != arr->type) error("type mismatch");
+Data *getData(DynamicArray* arr, int pos, Type type) {
+    if (type != arr->type) error("type mismatch: getData\n");
 
-    if (pos < 0 || pos >= arr->offset) error("Index out of bounds\n");
+    if (pos < 0 || pos >= arr->offset) error("Index out of bounds: getData\n");
 
     return &(arr->data[pos]);
 }
 
 int getOffset(DynamicArray* arr) {
-    return arr->offset
+    return arr->offset -1 ;
+}
+
+int getNumElements(DynamicArray *arr) {
+    return arr->offset;
 }
 //this only fetch one data but muiltiple
 int fetchPosition(DynamicArray* arr, bool (customCmp)(Data*, Data*), Data* expectedValue, Type type) {
-    if (type != arr->type) error("Type mismatch");
+    if (type != arr->type) error("Type mismatch: fetchPosition\n");
     Data* d;
     for (int i = 0; i < arr->offset; i++) {
         d = getData(arr, i, type);

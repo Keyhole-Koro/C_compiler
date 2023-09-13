@@ -5,13 +5,16 @@
 #define SIZE_OF_A_MEMORY (8)
 
 #include <stddef.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 //#include "commonData.h"
 
 typedef struct {
     int n;
     int left;
-    int* right; // modify later
+    int right[10]; // modify later
     int readPosition;
     int cur_symbol;
 } Production;
@@ -19,8 +22,8 @@ typedef struct {
 typedef struct Item {
     int stateId;
     int transitionedSymbol;
-    Production** Productions;
-    struct Item** transitionDestinations;
+    Production *Productions;
+    struct Item *transitionDestinations;
 } Item;
 
 
@@ -31,5 +34,7 @@ typedef enum {
 } Type;
 
 size_t getDataSize(Type tp);
+
+void error(char ch[]);
 
 #endif

@@ -21,8 +21,10 @@ typedef struct {
 DynamicArray* createDynamicArray(int initialCapacity, Type type);
 void append(DynamicArray* arr, void* element, Type type);
 int fetchPosition(DynamicArray* arr, bool (customCmp)(Data*, Data*), Data* expectedValue, Type type);
+Data *getData(DynamicArray* arr, int pos, Type type);
 void destroyDynamicArray(DynamicArray* arr);
 int getOffset(DynamicArray* arr);
+int getNumElements(DynamicArray *arr);
 void swapElement(DynamicArray* arr, int pos1, int pos2, Type type);
 #endif
 
