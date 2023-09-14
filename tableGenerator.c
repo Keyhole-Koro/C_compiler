@@ -27,7 +27,7 @@
  */
 
 enum {
-    NUM,      //number
+    NUM = 1,      //number
     ADD,      // +
     SUB,      // -
     MUL,      // *
@@ -79,10 +79,8 @@ bool isNonTerminal(int symbol) {
 }
 
 int partition(DynamicArray* arr, int low, int high) {
-    printf("partition\n");
     Production *high_prod = (Production *)getData(arr, high, PRODUCTION);
     int pivot = high_prod->cur_symbol;
-    
     Production *j_prod;
     
     int i = (low - 1);
@@ -99,8 +97,7 @@ int partition(DynamicArray* arr, int low, int high) {
 }
 
 //sort productions according the number of symbols
-void sortProd(DynamicArray* arr, int low, int high) {
-    printf("sortProd\n");
+void sortProd(DynamicArray *arr, int low, int high) {
     if (low < high) {
         int pi = partition(arr, low, high);
 
@@ -110,13 +107,11 @@ void sortProd(DynamicArray* arr, int low, int high) {
 }
 
 int getCurSymbol(Data* data) {
-    printf("getCurSymbol\n");
     Production *prod = (Production *)(data);
     return prod->cur_symbol;
 }
 
 void setSymbol(DynamicArray *prodArr, Type type) {
-    printf("setSymbol\n");
     if (type != PRODUCTION) error("type mismatch: setSymbol\n");
     for (int i = 0; i < getOffset(prodArr); i++) {
         Production *prod = (Production *)getData(prodArr, i, PRODUCTION);
@@ -127,7 +122,6 @@ void setSymbol(DynamicArray *prodArr, Type type) {
 }
 
 void incrementPosition(DynamicArray *prodArr, Type type) {
-    printf("incrementPosition\n");
     if (type != PRODUCTION) error("type mismatch: incrementPosition\n");
     Production *prod;
     for (int i = 0; i < getOffset(prodArr); i++) {
@@ -137,7 +131,6 @@ void incrementPosition(DynamicArray *prodArr, Type type) {
 }
 
 bool isOverlap(DynamicArray *symbolArr, int symbol, Type type) {
-    printf("isOverlap\n");
     if (type != INT) error("type mismatch: isOverlap\n");
     Production *prod;
     for (int i = 0; i < getOffset(symbolArr); i++) {
@@ -148,10 +141,10 @@ bool isOverlap(DynamicArray *symbolArr, int symbol, Type type) {
 }
 
 void removeElement(DynamicArray *arr, int i) {
-    printf("removeElement\n");
     Production *prod = (Production *)getData(arr, i, PRODUCTION);
-    prod = (Production *)empty_prod;
+    *prod = *(Production *)empty_prod;
 }
+
 
 void deprioritizeProd(DynamicArray *prodArr, int deprioritizedPos) {
     removeElement(prodArr, deprioritizedPos);
@@ -160,11 +153,10 @@ void deprioritizeProd(DynamicArray *prodArr, int deprioritizedPos) {
 }
 //this one extract single kind of prods
 void appendProdLeftIs(DynamicArray *fetchedProdArray, DynamicArray *duplicatedProdsArray, int expectedSymbol) {
-    printf("appendProdLeftIs\n");
     int condition = getNumElements(duplicatedProdsArray);
     for (int i = 0; i < condition; i++) {
         Production *prod = (Production *)getData(duplicatedProdsArray, i, PRODUCTION);
-        if (prod->left == -1) break;
+        if (prod->left == -1) continue;
         if (prod->left == expectedSymbol) {
             append(fetchedProdArray, &productions[i], PRODUCTION);
             if (getNumElements(duplicatedProdsArray) >= 2) deprioritizeProd(duplicatedProdsArray, i);
@@ -180,7 +172,6 @@ bool cmpSymbol(Data *data, Data *expectedValue) {
 
 //this one extracts multiple kind of prods
 void extractNessesaryProds(DynamicArray *fetchedProdArray, DynamicArray *duplicatedProdsArray) {
-    printf("extractNessesaryProds\n");
     DynamicArray *fetchedSymbolArray = createDynamicArray(10, INT);
     int offset = getNumElements(fetchedProdArray);
     for (int i = 0; i < offset; i++) {
@@ -189,26 +180,30 @@ void extractNessesaryProds(DynamicArray *fetchedProdArray, DynamicArray *duplica
         if (prod->left == -1) continue;
                         
         int symbol = prod->cur_symbol;
-        printf("num: %d\n", prod->n);
-        printf("symbol: %d\n", symbol);
-        if (!isNonTerminal(symbol) || isOverlap(fetchedSymbolArray, symbol, INT)) continue;
+        printf("num of fetched array: %d\n", getOffset(fetchedProdArray));
+        printf("extract num: %d\n", prod->n);
+        printf("extract symbol: %d\n", symbol);
+        if (!isNonTerminal(symbol)) continue;
+        // || isOverlap(fetchedSymbolArray, symbol, INT)
         //printf("i: %d\n", i);
+        printf("fetched symbol: %d\n", symbol);
         append(fetchedSymbolArray, &symbol, INT);
         int pos_symbol = fetchPosition(fetchedSymbolArray, cmpSymbol, (Data *)&symbol, INT);
+                
         //swap and prioritize the recent element to avoid excess calculate
         if (pos_symbol != 0 && getNumElements(fetchedSymbolArray) > 1) swapElement(fetchedSymbolArray, pos_symbol, getOffset(fetchedSymbolArray), INT);
         
         appendProdLeftIs(fetchedProdArray, duplicatedProdsArray, symbol);
         
         offset = getNumElements(fetchedProdArray);
-        printf("offset: %d\n", offset);
     }
 }
 
 void insertProds(DynamicArray *arr, Type type) {
     for (int i = 0; i < ARRAY_LENGTH(productions); i++) {
-        append(arr, &productions[i], PRODUCTION);
-        Production *prod = (Production *)getData(arr, i, PRODUCTION);
+        Production *copied_prod = malloc(sizeof(Production));
+        *copied_prod = productions[i];
+        append(arr, copied_prod, PRODUCTION);
     }
 }
 
@@ -224,16 +219,15 @@ void eliminateOverlap(DynamicArray *duplicatedProdsArray, DynamicArray *fetchedP
 
 void setUpDupliProd(DynamicArray *duplicatedProdsArray, DynamicArray *fetchedProdArray) {
     insertProds(duplicatedProdsArray, PRODUCTION);
-    
-    sortProd(duplicatedProdsArray, 0, getOffset(duplicatedProdsArray) - 1);
+
+    sortProd(duplicatedProdsArray, 0, getOffset(duplicatedProdsArray));
     
     eliminateOverlap(duplicatedProdsArray, fetchedProdArray);
-
 }
 //the copying prod takes much time
 Item *createItem(DynamicArray *itemArray, DynamicArray *fetchedProdArray, int readSymbol){
     int size = ARRAY_LENGTH(productions) * sizeof(Production);
-    DynamicArray *duplicatedProdsArray = createDynamicArray(size, PRODUCTION);
+    DynamicArray *duplicatedProdsArray = createDynamicArray(size+1, PRODUCTION);
     
     setUpDupliProd(duplicatedProdsArray, fetchedProdArray);
     
@@ -241,7 +235,7 @@ Item *createItem(DynamicArray *itemArray, DynamicArray *fetchedProdArray, int re
     printf("---------\n");
     for (int i = 0; i < getOffset(fetchedProdArray); i++) {
         Production *prod = (Production *)getData(fetchedProdArray, i, PRODUCTION);
-        printf("cur_symbol %d\n", prod->n);
+        printf("n cur_symbol %d %d\n", prod->n, prod->cur_symbol);
     }
 
     

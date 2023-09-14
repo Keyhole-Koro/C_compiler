@@ -10,7 +10,7 @@
 DynamicArray *createDynamicArray(int initialCapacity, Type type) {
     DynamicArray* arr = malloc(sizeof(DynamicArray));
     if (arr == NULL) error("Memory allocation failed\n");
-    arr->data = malloc(initialCapacity * getDataSize(type));
+    arr->data = (Data **)malloc(sizeof(Data *)*initialCapacity);
     if (arr->data == NULL) error("Memory allocation failed\n");
     arr->type = type;
     arr->offset = 0;
@@ -26,28 +26,28 @@ void append(DynamicArray* arr, void *element, Type type) {
         arr->data = realloc(arr->data, arr->capacity * getDataSize(type));
         if (arr->data == NULL) error("Memory allocation failed\n");
     }
-    memcpy(&(arr->data[arr->offset++]), element, getDataSize(type));
-    
+    Data **copy_data = malloc(sizeof(*element));
+    *copy_data = (Data *)element;
+    arr->data[arr->offset++] = *copy_data;
+    //memcpy(&(arr->data[arr->offset++]), element, getDataSize(type));
 }
 
 void swapElement(DynamicArray *arr, int pos1, int pos2, Type type) {
-    if (type != arr->type) error("type mismatch: swapElement\n");
-
-    if (pos1 < 0 || pos1 >= arr->offset || pos2 < 0 || pos2 >= arr->offset) error("Index out of bounds: swapElement\n");
-
-    size_t dataSize = getDataSize(type);
-
-    Data *element1 = getData(arr, pos1, type);
-    Data *element2 = getData(arr, pos2, type);
-
-    Data *temp_element1 = (Data *)malloc(dataSize);
-    memcpy(temp_element1, element1, dataSize);
-    memcpy(element1, element2, dataSize);
-    memcpy(element2, temp_element1, dataSize);
-    if (type == PRODUCTION) {
-        Production *prod = (Production *)element1;
-        printf("ssssssssssssssss: %d, %d\n", prod->n, prod->cur_symbol);
+    if (type != arr->type) {
+        error("type mismatch: swapElement\n");
+        return;
     }
+
+    if (pos1 < 0 || pos1 >= arr->offset || pos2 < 0 || pos2 >= arr->offset) {
+        error("Index out of bounds: swapElement\n");
+        return;
+    }
+
+    Data **data = arr->data;
+
+    Data *temp_element = data[pos1];
+    data[pos1] = data[pos2];
+    data[pos2] = temp_element;
 }
 
 
@@ -73,7 +73,7 @@ Data *getData(DynamicArray* arr, int pos, Type type) {
 
     if (pos < 0 || pos >= arr->offset) error("Index out of bounds: getData\n");
 
-    return &(arr->data[pos]);
+    return arr->data[pos];
 }
 
 int getOffset(DynamicArray* arr) {

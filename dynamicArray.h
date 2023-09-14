@@ -6,14 +6,14 @@
 #include "utilities.h"
 
 typedef union {
-    int* intData;
-    Production* producitonData;
-    Item* itemData;
+    int **intData;
+    Production **producitonData;
+    Item **itemData;
 } Data;
 
 typedef struct {
     Type type;
-    Data* data;
+    Data **data;
     int offset;
     int capacity;
 } DynamicArray;
