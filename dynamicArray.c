@@ -7,6 +7,19 @@
 #include "dynamicArray.h"
 #include "utilities.h"
 
+/*
+DynamicArray*
+|
+|->Data **
+     |     --------------
+     | -> |ptr0|ptr1|ptr2|
+           --------------
+     ----    ----    ----
+    |val0|  |val1|  |val2|
+     ----    ----    ----
+ value are separated
+ 
+ */
 DynamicArray *createDynamicArray(int initialCapacity, Type type) {
     DynamicArray* arr = malloc(sizeof(DynamicArray));
     if (arr == NULL) error("Memory allocation failed\n");

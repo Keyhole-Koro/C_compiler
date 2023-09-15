@@ -12,7 +12,7 @@
 //#include "commonData.h"
 
 typedef struct {
-    int n;
+    int key;
     int left;
     int right[10]; // modify later
     int readPosition;
@@ -22,8 +22,8 @@ typedef struct {
 typedef struct Item {
     int stateId;
     int transitionedSymbol;
-    Production *Productions;
-    struct Item *transitionDestinations;
+    Production **Productions;
+    struct Item **transitionDestinations;
 } Item;
 
 
