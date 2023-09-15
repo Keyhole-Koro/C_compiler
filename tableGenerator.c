@@ -151,7 +151,7 @@ void removeElement(DynamicArray *arr, int i) {
     *prod = *(Production *)empty_prod;
 }
 
-
+//please ensure the producions are copied one but the original one
 void deprioritizeProd(DynamicArray *prodArr, int deprioritizedPos) {
     removeElement(prodArr, deprioritizedPos);
     //make deprioritized element move to the end of array to reduce calculation
@@ -159,10 +159,9 @@ void deprioritizeProd(DynamicArray *prodArr, int deprioritizedPos) {
 }
 //this one extract single kind of prods
 void appendProdLeftIs(DynamicArray *fetchedProdArray, DynamicArray *duplicatedProdsArray, int expectedSymbol) {
-    int condition = getNumElements(duplicatedProdsArray);
-    for (int i = 0; i < condition; i++) {
+    for (int i = 0; i < getNumElements(duplicatedProdsArray); i++) {
         Production *prod = (Production *)getData(duplicatedProdsArray, i, PRODUCTION);
-        if (prod->left == -1) continue;
+        if (prod->left == -1) break;//modified continue to break
         if (prod->left == expectedSymbol) {
             Production *copy_prod = (Production *)malloc(getDataSize(PRODUCTION));
             *copy_prod = *prod;
@@ -255,45 +254,53 @@ void setUpTransisterdProd(DynamicArray *newProdArr, DynamicArray *oldProdArray, 
     updateCur_Symbol(newProdArr, PRODUCTION);
 }
 
-DynamicArray *extractProd(DynamicArray *originalProdArr, DynamicArray *fetchedProdArray, int expectedSymbol) {
-    DynamicArray *extractedProdArr = createDynamicArray(getNumElements(fetchedProdArray)/2, PRODUCTION);
-    for (j = beginning_point; j < getNumElements(originalProdArr); j++){
+DynamicArray *extractProd(DynamicArray *originalProdArr, int expectedSymbol) {
+    DynamicArray *extractedProdArr = createDynamicArray(getNumElements(originalProdArr), PRODUCTION);
+    int numElements = getNumElements(originalProdArr);
+    for (int j = 0; j < getNumElements(originalProdArr); j++){
         Production *prod = (Production *)getData(originalProdArr, j, PRODUCTION);
-        if (prod->left != expectedSymbol) break;
+        if (prod->left == -1) break;
+        if (prod->left != expectedSymbol) continue;
         append(extractedProdArr, prod, PRODUCTION);
-    }
+        deprioritizeProd(originalProdArr, i);
+        }
     return extractProdArr;
 }
+
 //combine prodTransitter and createItem partially later
 void prodTransitter(DynamicArray *itemArray, DynamicArray *oldProdArray, DynamicArray *fetchedSymbolArray) {
     DynamicArray *newProdArr = createDynamicArray(getNumElements(fetchedProdArray), PRODUCTION);
     setUpTransisterdProd(newProdArr, oldProdArray, PRODUCTION);
     
-    int beginning_point = 0;
-    int j = 0;
     DynamicArray *newItems = createDynamicArray(getNumElements(fetchedSymbolArray, ITEM);
-    for (int i = 0; i < getNumElements(fetchedSymbolArray; i++)) {
+    Item *cur_latest_item = (Item *)getData(itemArray, getNumElements(itemArray),ITEM);
+    for (int i = 0; i < getNumElements(fetchedSymbolArray); i++)) {
         int symbol = (int)*getData(fetchedSymbolArray, i, INT);
-        DynamicArray *extractedProdArr = extractProd(newProdArr, fetchedProdArray, symbol);
+        
+        DynamicArray *extractedProdArr = extractProd(newProdArr, symbol);
 
         if (isEndProd(extractedProdArr)) continue;//not yet
         
         Item *new_item = createItem(itemArray, extractedProdArr, symbol);
         append(newItems, (Data *)new_item, ITEM);
-        beginning_point = --j;
     }
-    Item *previous_item = (Item *)getData(itemArray, ,ITEM);
     
-    free(newProdArr);
+    //free(newProdArr);
 }
 
-Data *fetchItem() {
-    int pos_item = fetchPosition();// not yet
+Item *fetchItem(DynamicArray *itemArr, Production *ProdArray) {
+    Item *latest_arr = (Item *)getData(itemArr, getOffset(itemArr), ITEM);
+    int expectedSymbol = latest_arr->transitionedSymbol;
+    DynamicArray *pos_items = fetchMultiPositions(expectedSymbol);
+    for (int i = 0; i < getNumElements(pos_items); i++) {
+        Item *item = (Item *)getData(itemArr, (int)pos_items[i], ITEM);//now
+    }
+    
 }
 
 //the copying prod takes much time
 Item *createItem(DynamicArray *itemArray, DynamicArray *fetchedProdArray, int expectedSymbol) {
-    Data *certainExistingItem = fetchItem();//not yet
+    Item *certainExistingItem = fetchItem(fetchedProdArray);
     
     if (duplicatedItem != NULL) {
         itemArray = certainExistingItem;

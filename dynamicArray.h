@@ -26,5 +26,5 @@ void destroyDynamicArray(DynamicArray* arr);
 int getOffset(DynamicArray* arr);
 int getNumElements(DynamicArray *arr);
 void swapElement(DynamicArray* arr, int pos1, int pos2, Type type);
+int *fetchMultiPositions(DynamicArray *arr, bool (customCmp)(Data*, Data*), Data* expectedValue, Type type)
 #endif
-

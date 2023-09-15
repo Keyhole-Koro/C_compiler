@@ -81,7 +81,7 @@ bool cmpTransitionedSymbol(Data* data, Data* expectedValue) {
     return item->transitionedSymbol == *compedValue;
 }
 
-Data *getData(DynamicArray* arr, int pos, Type type) {
+Data *getData(DynamicArray *arr, int pos, Type type) {
     if (type != arr->type) error("type mismatch: getData\n");
 
     if (pos < 0 || pos >= arr->offset) error("Index out of bounds: getData\n");
@@ -97,13 +97,24 @@ int getNumElements(DynamicArray *arr) {
     return arr->offset;
 }
 //this only fetch one data but muiltiple
-int fetchPosition(DynamicArray* arr, bool (customCmp)(Data*, Data*), Data* expectedValue, Type type) {
+int fetchPosition(DynamicArray *arr, bool (customCmp)(Data*, Data*), Data* expectedValue, Type type) {
     if (type != arr->type) error("Type mismatch: fetchPosition\n");
-    Data* d;
+    Data *d;
     for (int i = 0; i < arr->offset; i++) {
         d = getData(arr, i, type);
         if (customCmp(d, expectedValue)) return i;
     }
     error("Not found\n");
     return -1;
+}
+
+int *fetchMultiPositions(DynamicArray *arr, bool (customCmp)(Data*, Data*), Data* expectedValue, Type type) {
+    if (type != arr->type) error("Type mismatch: fetchPosition\n");
+    Data *d = (int *)malloc(sizeof(int) * getNumElements(arr));
+    int offset = 0;
+    for (int i = 0; i < arr->offset; i++) {
+        d = getData(arr, i, type);
+        if (customCmp(d, expectedValue)) d[offset++] = i;
+    }
+    return d;
 }
