@@ -25,6 +25,10 @@
  ----
  fetchedSymbols: F T E
  */
+#include <unistd.h>
+
+
+Item *createItem(DynamicArray *itemArray, DynamicArray *fetchedProdArray, int expectedSymbol);
 
 enum {
     NUM = 1,      //number
@@ -59,15 +63,15 @@ int numItems = 0;
 //{EXPR, ADD, TERM}
 //   0    1     2
 Production productions[] = {
-    {0, EXPR, {EXPR, END}, 0, EXPR},
-    {1, EXPR, {EXPR, ADD, TERM}, 0, EXPR},
-    {2, EXPR, {EXPR, SUB, TERM}, 0, EXPR},
-    {3, EXPR, {TERM}, 0, TERM},
-    {4, TERM, {TERM, MUL, FACTOR}, 0, TERM},
-    {5, TERM, {TERM, DIV, FACTOR}, 0, TERM},
-    {6, TERM, {FACTOR}, 0, FACTOR},
-    {7, FACTOR, {L_PARENTHESES, EXPR, R_PARENTHESES}, 0, L_PARENTHESES},
-    {8, FACTOR, {NUM}, 0, NUM},
+    {0, EXPR, {EXPR, END, -1}, 0, EXPR},
+    {1, EXPR, {EXPR, ADD, TERM, -1}, 0, EXPR},
+    {2, EXPR, {EXPR, SUB, TERM, -1}, 0, EXPR},
+    {3, EXPR, {TERM, -1}, 0, TERM},
+    {4, TERM, {TERM, MUL, FACTOR, -1}, 0, TERM},
+    {5, TERM, {TERM, DIV, FACTOR, -1}, 0, TERM},
+    {6, TERM, {FACTOR, -1}, 0, FACTOR},
+    {7, FACTOR, {L_PARENTHESES, EXPR, R_PARENTHESES, -1}, 0, L_PARENTHESES},
+    {8, FACTOR, {NUM, -1}, 0, NUM},
 };
 
 Production empty_prod_instance = {-1, -1, {-1}, -1, -1};
@@ -146,22 +150,35 @@ bool isSymbolOverlap(DynamicArray *symbolArr, int symbol, Type type) {
     return false;
 }
 
-void removeElement(DynamicArray *arr, int i) {
+void removeElement(DynamicArray *arr, int i, Type type) {
+    if (type != PRODUCTION) error("type mismatch: removeElement\n");
     Production *prod = (Production *)getData(arr, i, PRODUCTION);
     *prod = *(Production *)empty_prod;
 }
 
+int pos_validProdFromTail(DynamicArray *prodArr, Type type) {
+    if (type != PRODUCTION) error("type mismatch: pos_validProdFromTail\n");
+    int pos = getOffset(prodArr);
+    for (int i = getOffset(prodArr); i > 0; i--) {
+        Production *prod = (Production *)getData(prodArr, i, PRODUCTION);
+        if (prod->left == -1) break;
+        pos--;
+    }
+    return pos;
+}
+
 //please ensure the producions are copied one but the original one
-void deprioritizeProd(DynamicArray *prodArr, int deprioritizedPos) {
-    removeElement(prodArr, deprioritizedPos);
+void deprioritizeProd(DynamicArray *prodArr, int pos_deprioritized) {
+    removeElement(prodArr, pos_deprioritized, PRODUCTION);
     //make deprioritized element move to the end of array to reduce calculation
-    swapElement(prodArr, deprioritizedPos, getOffset(prodArr), PRODUCTION);
+    int pos = pos_validProdFromTail(prodArr, PRODUCTION);
+    swapElement(prodArr, pos_deprioritized, pos, PRODUCTION);
 }
 //this one extract single kind of prods
 void appendProdLeftIs(DynamicArray *fetchedProdArray, DynamicArray *duplicatedProdsArray, int expectedSymbol) {
     for (int i = 0; i < getNumElements(duplicatedProdsArray); i++) {
         Production *prod = (Production *)getData(duplicatedProdsArray, i, PRODUCTION);
-        if (prod->left == -1) break;//modified continue to break
+        if (prod->left == -1) continue;//modified continue to break
         if (prod->left == expectedSymbol) {
             Production *copy_prod = (Production *)malloc(getDataSize(PRODUCTION));
             *copy_prod = *prod;
@@ -173,15 +190,15 @@ void appendProdLeftIs(DynamicArray *fetchedProdArray, DynamicArray *duplicatedPr
 
 void prioritizeSymbol(DynamicArray *fetchedSymbolArray, int symbol) {
     int pos_symbol = fetchPosition(fetchedSymbolArray, cmpSymbol, (Data *)&symbol, INT);
-    printf("pos symbol: %d\n", pos_symbol);
     //swap and prioritize the recent element to avoid excess calculate
     if (pos_symbol != 0 && getNumElements(fetchedSymbolArray) > 1) swapElement(fetchedSymbolArray, pos_symbol, getOffset(fetchedSymbolArray), INT);
 }
+
 //this one extracts multiple kind of prods
-void extractNessesaryProds(DynamicArray *fetchedProdArray, DynamicArray *duplicatedProdsArray) {
-    DynamicArray *fetchedSymbolArray = createDynamicArray(10, INT);
-    int offset = getNumElements(fetchedProdArray);
-    for (int i = 0; i < offset; i++) {
+DynamicArray *gatherNessesaryProds(DynamicArray *fetchedProdArray, DynamicArray *duplicatedProdsArray, DynamicArray *fetchedSymbolArray) {
+    int num_elements = getNumElements(fetchedProdArray);
+    for (int i = 0; i < num_elements; i++) {
+        printf("num_elements: %d\n", num_elements);
 
         Production *prod = (Production *)getData(fetchedProdArray, i, PRODUCTION);
         if (prod->left == -1) continue;
@@ -190,16 +207,22 @@ void extractNessesaryProds(DynamicArray *fetchedProdArray, DynamicArray *duplica
 
         if (!isNonTerminal(cur_symbol) || isSymbolOverlap(fetchedSymbolArray, cur_symbol, INT)) continue;
 
-        int copied_symbol = (int)malloc(sizeof(int));
-        copied_symbol = cur_symbol;
-        append(fetchedSymbolArray, &copied_symbol, INT);
+        int *copied_symbol = (int *)malloc(sizeof(int *));
+        *copied_symbol = cur_symbol;
+        
+        printf("prod key: %d\n", prod->key);
+        printf("prod cur_symbol: %d\n", prod->cur_symbol);
+        
+        append(fetchedSymbolArray, copied_symbol, INT);
         
         prioritizeSymbol(fetchedSymbolArray, cur_symbol);
         
         appendProdLeftIs(fetchedProdArray, duplicatedProdsArray, cur_symbol);
         
-        offset = getNumElements(fetchedProdArray);
+        num_elements = getNumElements(fetchedProdArray);
+        
     }
+    return fetchedProdArray;
 }
 
 void insertProds(DynamicArray *arr, Type type) {
@@ -250,95 +273,164 @@ void setUpTransisterdProd(DynamicArray *newProdArr, DynamicArray *oldProdArray, 
     if (type != PRODUCTION) error("type mismatch: setSymbol\n");
     duplicateProds(newProdArr, oldProdArray, PRODUCTION);
     sortProd(newProdArr, leftGetter, 0, getOffset(newProdArr), PRODUCTION);
-    incrementPosition(newProdArr, PRODUCTION);
     updateCur_Symbol(newProdArr, PRODUCTION);
 }
 
-DynamicArray *extractProd(DynamicArray *originalProdArr, int expectedSymbol) {
-    DynamicArray *extractedProdArr = createDynamicArray(getNumElements(originalProdArr), PRODUCTION);
-    int numElements = getNumElements(originalProdArr);
-    for (int j = 0; j < getNumElements(originalProdArr); j++){
-        Production *prod = (Production *)getData(originalProdArr, j, PRODUCTION);
-        if (prod->left == -1) break;
-        if (prod->left != expectedSymbol) continue;
-        append(extractedProdArr, prod, PRODUCTION);
-        deprioritizeProd(originalProdArr, i);
+//make this optimize later particulary using deprioritizer
+bool isEndProd(DynamicArray *prodArr) {
+    if (getNumElements(prodArr) != 1) return false;
+    Production *singleProd = (Production *)getData(prodArr, 0, PRODUCTION);
+    int pos_read = singleProd->readPosition;
+    int num_right = 0;
+    for (int i = 0; i < sizeof(singleProd->right); i++) {
+        if (singleProd->right[i] == -1) break;
+        num_right++;
+    }
+    //which means the current symbol is the end of right side
+    if (pos_read == num_right) return true;
+    return false;
+}
+
+//you may be able to find faster way other than deprioritizer
+DynamicArray *extractProd(DynamicArray *copiedProdArray, int expectedSymbol) {
+    DynamicArray *extractedProdArr = createDynamicArray(getNumElements(copiedProdArray), PRODUCTION);
+    for (int i = 0; i < getNumElements(copiedProdArray); i++){
+        Production *copiedProd = (Production *)getData(copiedProdArray, i, PRODUCTION);
+        int sym = copiedProd->cur_symbol;
+        printf("sym: %d\n", sym);
+        if (sym == -1) continue;//can be replaced to break
+        if (sym != expectedSymbol) continue;
+        
+        //copied one will be deprioritized thats why you use the original one
+        Production *new_copiedProd = (Production *)malloc(sizeof(copiedProd));
+        *new_copiedProd = *copiedProd;
+        append(extractedProdArr, new_copiedProd, PRODUCTION);
+        deprioritizeProd(copiedProdArray, i);
         }
-    return extractProdArr;
+    return extractedProdArr;
 }
 
-//combine prodTransitter and createItem partially later
-void prodTransitter(DynamicArray *itemArray, DynamicArray *oldProdArray, DynamicArray *fetchedSymbolArray) {
-    DynamicArray *newProdArr = createDynamicArray(getNumElements(fetchedProdArray), PRODUCTION);
-    setUpTransisterdProd(newProdArr, oldProdArray, PRODUCTION);
-    
-    DynamicArray *newItems = createDynamicArray(getNumElements(fetchedSymbolArray, ITEM);
-    Item *cur_latest_item = (Item *)getData(itemArray, getNumElements(itemArray),ITEM);
-    for (int i = 0; i < getNumElements(fetchedSymbolArray); i++)) {
-        int symbol = (int)*getData(fetchedSymbolArray, i, INT);
-        
-        DynamicArray *extractedProdArr = extractProd(newProdArr, symbol);
 
-        if (isEndProd(extractedProdArr)) continue;//not yet
+//make this optimize later particulary using deprioritizer
+void prodTransitter(DynamicArray *itemArray, DynamicArray *fetchedProdArray, DynamicArray *symbolArray) {
+    DynamicArray *copiedProdArr = createDynamicArray(getNumElements(fetchedProdArray), PRODUCTION);
+    //duplicated
+    setUpTransisterdProd(copiedProdArr, fetchedProdArray, PRODUCTION);
+    
+    DynamicArray *newItems = createDynamicArray(getNumElements(symbolArray), ITEM);
+    
+    //this part is supposed to be done before createItem() below
+    int cur_latest_num_item = getOffset(itemArray);
+
+    for (int i = 0; i < getNumElements(copiedProdArr); i++) {
+        Production *prod = (Production *)getData(copiedProdArr, i, PRODUCTION);
+        int *symbol = (int *)&(prod->cur_symbol);
         
-        Item *new_item = createItem(itemArray, extractedProdArr, symbol);
-        append(newItems, (Data *)new_item, ITEM);
+        if (*symbol == -1) continue;
+        printf("expected symbol: %d\n", *symbol);
+        DynamicArray *extractedProdArr = extractProd(copiedProdArr, *symbol);
+        
+        if (getNumElements(extractedProdArr) == 0) continue;
+        
+        if (isEndProd(extractedProdArr)) continue;
+        printf("num of extracted prods: %d\n", getNumElements(extractedProdArr));
+        Item *new_item = createItem(itemArray, extractedProdArr, *symbol);
+        append(newItems, new_item, ITEM);
     }
-    
-    //free(newProdArr);
+
+    if (cur_latest_num_item > 0) {
+        Item *cur_latest_item = (Item *)getData(itemArray, cur_latest_num_item,ITEM);
+        cur_latest_item->transitionDestinations = (Item *)newItems;
+    }
+    //destroyDynamicArray(newProdArr);
 }
 
-Item *fetchItem(DynamicArray *itemArr, Production *ProdArray) {
-    Item *latest_arr = (Item *)getData(itemArr, getOffset(itemArr), ITEM);
-    int expectedSymbol = latest_arr->transitionedSymbol;
-    DynamicArray *pos_items = fetchMultiPositions(expectedSymbol);
+//add deprioritizer
+bool isThereSameProd(Production *prod, DynamicArray *prodArray) {
+    for (int i = 0; i < getNumElements(prodArray); i++) {
+        Production *prod_arr = (Production *)getData(prodArray, i, PRODUCTION);
+        int key = prod_arr->key;
+        if (key == prod->key) return true;
+    }
+    return false;
+}
+
+//this take much time
+bool isExsistingItem(Item *item, DynamicArray *prodArray) {
+    int num_prodArray = getNumElements(prodArray);
+    for (int i = 0; i < num_prodArray; i++) {
+        Production *prod_item = item->Productions;
+        if (getNumElements((DynamicArray *)prod_item) != getNumElements(prodArray)) continue;
+        
+        Production *prod = (Production *)getData((DynamicArray *)prod_item, i, PRODUCTION);
+        
+        if (!isThereSameProd(prod, prodArray)) return false;
+    }
+    return true;
+}
+
+Item *fetchItem(DynamicArray *itemArray, DynamicArray *prodArray, int expectedSymbol) {
+    if (getNumElements(itemArray) == 0) return NULL;
+    Item *latest_arr = (Item *)getData(itemArray, getOffset(itemArray), ITEM);
+    DynamicArray *pos_items = fetchMultiPositions(itemArray, cmpTransitionedSymbol, (Data *)&expectedSymbol, ITEM);
     for (int i = 0; i < getNumElements(pos_items); i++) {
-        Item *item = (Item *)getData(itemArr, (int)pos_items[i], ITEM);//now
+        Item *item = (Item *)getData(itemArray, i, ITEM);//sus *pos - 1
+        if (latest_arr->transitionedSymbol != expectedSymbol) continue;
+        if (isExsistingItem(item, prodArray)) return item;
     }
     
+    destroyDynamicArray(pos_items);
+    return NULL;
+}
+
+Item *setItem(DynamicArray *itemArray, int transitionedSymbol, DynamicArray *fetchedProdArray) {
+    Item *new_item = (Item *)malloc(sizeof(Item));
+    new_item->stateId = getNumElements(itemArray);
+    new_item->transitionedSymbol = transitionedSymbol;
+    new_item->Productions = (Production *)fetchedProdArray;
+    append(itemArray, new_item, ITEM);
+    return (Item *)getData(itemArray, getOffset(itemArray), ITEM);//it can be able to be replaced to new_item
 }
 
 //the copying prod takes much time
 Item *createItem(DynamicArray *itemArray, DynamicArray *fetchedProdArray, int expectedSymbol) {
-    Item *certainExistingItem = fetchItem(fetchedProdArray);
-    
-    if (duplicatedItem != NULL) {
-        itemArray = certainExistingItem;
+    printf("num of item: %d\n", getNumElements(itemArray));
+    printf("---------------\ncreateItem: %d\n", getNumElements(fetchedProdArray));
+    for (int i = 0; i < getNumElements(fetchedProdArray); i++) {
+        Production *prod = (Production *)getData(fetchedProdArray, i, PRODUCTION);
+        printf("key, cur_symbol: %d %d\n", prod->key, prod->cur_symbol);
+    }
+    Item *existingItem = fetchItem(itemArray, fetchedProdArray, expectedSymbol);
+    if (existingItem != NULL) {
+        return existingItem;
     } else {
+        DynamicArray *fetchedSymbolArray = createDynamicArray(10, INT);
         int size = ARRAY_LENGTH(productions) * sizeof(Production);
-        DynamicArray *duplicatedProdsArray = createDynamicArray(size+1, PRODUCTION);
+        DynamicArray *duplicatedProdsArray = createDynamicArray(size + 1, PRODUCTION);
         
         setUpDupliProd(duplicatedProdsArray, fetchedProdArray);
         
-        extractNessesaryProds(fetchedProdArray, duplicatedProdsArray);
+        //dont have to be returned you can use fetchedProdArray in the same way as gatheredProdArray
+        DynamicArray *gatheredProdArray = gatherNessesaryProds(fetchedProdArray, duplicatedProdsArray, fetchedSymbolArray);
         printf("---------\n");
         for (int i = 0; i < getNumElements(fetchedProdArray); i++) {
-            Production *prod = (Production *)getData(fetchedProdArray, i, PRODUCTION);
+            Production *prod = (Production *)getData(gatheredProdArray, i, PRODUCTION);
             printf("key cur_symbol %d %d\n", prod->key, prod->cur_symbol);
         }
-        prodTransitter(itemArray, fetchedProdArray, fetchedSymbolArray);
-    }
-    //make insertItem later
-    Item *new_item = (Item *)malloc(sizeof(Item));
-    new_item->stateId = getNumElements(itemArray);
-    new_item->transitionedSymbol = expectedSymbol;
-    new_item->Productions = (Production **)&fetchedProdArray;
-    new_item->transitionDestinations = ;//not yet
+        Item *cur_latest_item = setItem(itemArray, expectedSymbol, gatheredProdArray);
+
+        prodTransitter(itemArray, gatheredProdArray, fetchedSymbolArray);
         
-    append(itemArray, new_item, ITEM);
-    
-    free(duplicatedProdsArray);
-    
-    return new_item;//tmp
+        return cur_latest_item;
+    }
 }
 
 int main() {
+    DynamicArray *itemArray = createDynamicArray(10, ITEM);
     DynamicArray *fetchedProdArray = createDynamicArray(10, PRODUCTION);
     append(fetchedProdArray, &productions[0], PRODUCTION);
 
     Item *first_item = createItem(itemArray, fetchedProdArray, EXPR);//temporary
-    
-    
 }
 
 //createFirst()
@@ -349,3 +441,4 @@ int main() {
 //sortRows(
 //sortColumns()
 //readItem()
+

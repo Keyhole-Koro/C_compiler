@@ -19,11 +19,13 @@ typedef struct {
     int cur_symbol;
 } Production;
 
+typedef struct Item Item;
+
 typedef struct Item {
     int stateId;
     int transitionedSymbol;
-    Production **Productions;
-    struct Item **transitionDestinations;
+    Production *Productions;
+    Item *transitionDestinations;
 } Item;
 
 

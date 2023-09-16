@@ -18,7 +18,6 @@ DynamicArray*
     |val0|  |val1|  |val2|
      ----    ----    ----
  value are separated
- 
  */
 DynamicArray *createDynamicArray(int initialCapacity, Type type) {
     DynamicArray* arr = malloc(sizeof(DynamicArray));
@@ -81,6 +80,7 @@ bool cmpTransitionedSymbol(Data* data, Data* expectedValue) {
     return item->transitionedSymbol == *compedValue;
 }
 
+
 Data *getData(DynamicArray *arr, int pos, Type type) {
     if (type != arr->type) error("type mismatch: getData\n");
 
@@ -108,13 +108,15 @@ int fetchPosition(DynamicArray *arr, bool (customCmp)(Data*, Data*), Data* expec
     return -1;
 }
 
-int *fetchMultiPositions(DynamicArray *arr, bool (customCmp)(Data*, Data*), Data* expectedValue, Type type) {
+DynamicArray *fetchMultiPositions(DynamicArray *arr, bool (customCmp)(Data*, Data*), Data *expectedValue, Type type) {
     if (type != arr->type) error("Type mismatch: fetchPosition\n");
-    Data *d = (int *)malloc(sizeof(int) * getNumElements(arr));
+    DynamicArray *dArr = createDynamicArray(getNumElements(arr), INT);
     int offset = 0;
     for (int i = 0; i < arr->offset; i++) {
-        d = getData(arr, i, type);
-        if (customCmp(d, expectedValue)) d[offset++] = i;
+        Data *d = getData(arr, i, type);
+        if (customCmp(d, expectedValue)) append(dArr, &i, INT);
     }
-    return d;
+    return dArr;
 }
+
+//duplicate()
