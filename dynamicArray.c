@@ -159,7 +159,7 @@ DynamicArray *fetchMultiPositions(DynamicArray *arr, bool (customCmp)(Data*, Dat
 
 DynamicArray *duplicateArray(DynamicArray *originalArr, bool ifModifiable) {
     DynamicArray *duplicatedArray = createDynamicArray(getNumElements(originalArr), ifModifiable, originalArr->type);
-    memcpy(duplicatedArray, originalArr, (originalArr->offset * sizeof(void *)));
+    memcpy(duplicatedArray, originalArr, (sizeof(*originalArr));
     return duplicatedArray;
 }
 
