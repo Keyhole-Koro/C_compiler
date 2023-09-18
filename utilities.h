@@ -25,6 +25,7 @@ typedef struct Item {
     int stateId;
     int transitionedSymbol;
     Production *Productions;
+    int hashed_keys;
     Item *transitionDestinations;
 } Item;
 
