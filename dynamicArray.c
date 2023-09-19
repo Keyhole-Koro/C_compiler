@@ -158,21 +158,29 @@ DynamicArray *fetchMultiPositions(DynamicArray *arr, bool (customCmp)(Data*, Dat
 }
 
 DynamicArray *duplicateArray(DynamicArray *originalArr, bool ifModifiable) {
-    DynamicArray *duplicatedArray = createDynamicArray(getNumElements(originalArr), ifModifiable, originalArr->type);
-    memcpy(duplicatedArray, originalArr, (sizeof(*originalArr));
+    Type type = originalArr->type;
+    DynamicArray *duplicatedArray = createDynamicArray(getNumElements(originalArr), ifModifiable, type);
+
+    for (int i = 0; i < getNumElements(originalArr); i++) {
+        Data *copied_data = (Data *)malloc(getDataSize(type));
+        *copied_data = *getData(originalArr, i, type);
+        append(duplicatedArray, copied_data, type);
+    }
+
     return duplicatedArray;
 }
 
+
 void deprioritizeArray(DynamicArray *arr, int pos_deprioritized, Type type) {
     if (type != arr->type) error("Type mismatch: deprioritizeArray\n");
-    
+    if (getNumElements(arr) >= 2) return;
     swapWithLastElement(arr, pos_deprioritized, type);
     
     removeLastElement(arr);
 }
 
 int calculateSetHash(DynamicArray *array, int (referentElement)(Data*, Type type), Type type) {
-    if (type == PRODUCTION) error("type mismatch: calculateSetHash\n");
+    if (type != PRODUCTION) error("type mismatch: calculateSetHash\n");
     int hash = 0;
         
     for (int i = 0; i < getNumElements(array); i++) {

@@ -74,12 +74,10 @@ int leftGetter(Production *prod) {
 }
 
 int prodPartition(DynamicArray *arr, int (referentFunc)(Production *), int low, int high, Type type) {
-    printf("prodPartition\n");
-    if (type != PRODUCTION) error("type mismatch: sortProd\n");
+    if (type != PRODUCTION) error("type mismatch: prodPartition\n");
     Production *high_prod = (Production *)getData(arr, high, PRODUCTION);
     int pivot = referentFunc(high_prod);
     Production *j_prod;
-    
     int i = (low - 1);
 
     for (int j = low; j <= high - 1; j++) {
@@ -150,7 +148,7 @@ void appendProdLeftIs(DynamicArray *fetchedProdArray, DynamicArray *duplicatedPr
             Production *copy_prod = (Production *)malloc(getDataSize(PRODUCTION));
             *copy_prod = *prod;
             append(fetchedProdArray, copy_prod, PRODUCTION);//&productions[0] assuming n and the order of elements are sync
-            if (getNumElements(duplicatedProdsArray) >= 2) deprioritizeArray(duplicatedProdsArray, i, PRODUCTION);
+            deprioritizeArray(duplicatedProdsArray, i, PRODUCTION);
         }
     }
 }
@@ -211,6 +209,7 @@ void eliminateOverlap(DynamicArray *duplicatedProdsArray, DynamicArray *fetchedP
 }
 
 DynamicArray *setUpDupliProd(DynamicArray *fetchedProdArray) {
+	printf("setUpDupliProd\n");
     int size = ARRAY_LENGTH(productions) * sizeof(Production);
     DynamicArray *duplicatedProdsArray = createDynamicArray(size + 1, true, PRODUCTION);
     
@@ -224,9 +223,11 @@ DynamicArray *setUpDupliProd(DynamicArray *fetchedProdArray) {
 }
 
 void updateCur_Symbol(DynamicArray *prodArr, Type type) {
+	printf("updateCur_Symbol: %d\n", getNumElements(prodArr));
     if (type != PRODUCTION) error("type mismatch: setSymbol\n");
     for (int i = 0; i < getNumElements(prodArr); i++) {
         Production *prod = (Production *)getData(prodArr, i, PRODUCTION);
+		printf("size of prod: %d\n", sizeof(*prod));
         //look ahead and increament
         int pos = prod->readPosition++;
         //update cur_symbol
@@ -242,10 +243,12 @@ void updateCur_Symbol(DynamicArray *prodArr, Type type) {
   ---------                  --------
  */
 DynamicArray *setUpTransisterdProd(DynamicArray *oldProdArray, Type type) {
+	printf("setUpTransisterProd\n");
     if (type != PRODUCTION) error("type mismatch: setSymbol\n");
     DynamicArray *duplicatedProdsArray = duplicateArray(oldProdArray, true);
     sortProd(duplicatedProdsArray, leftGetter, 0, getOffset(duplicatedProdsArray), PRODUCTION);
     updateCur_Symbol(duplicatedProdsArray, PRODUCTION);
+	printf("update done\n");
     return duplicatedProdsArray;
 }
 
@@ -284,14 +287,14 @@ DynamicArray *extractProd(DynamicArray *copiedProdArray, int expectedSymbol) {
 
 //make this optimize later particulary using deprioritizer
 void prodTransitter(DynamicArray *itemArray, DynamicArray *fetchedProdArray, DynamicArray *symbolArray) {
-    //duplicated
+    printf("prodTransitter\n");
     DynamicArray *duplicatedProdArray = setUpTransisterdProd(fetchedProdArray, PRODUCTION);
-    
+    printf("passed\n");
     DynamicArray *newItems = createDynamicArray(getNumElements(symbolArray), false, ITEM);
     
     //this part is supposed to be done before createItem() below
     int cur_latest_num_item = getOffset(itemArray);
-
+	printf("getNumElements: %d", getNumElements(duplicatedProdArray));
     for (int i = 0; i < getNumElements(duplicatedProdArray); i++) {
         Production *prod = (Production *)getData(duplicatedProdArray, i, PRODUCTION);
         int *symbol = (int *)&(prod->cur_symbol);
@@ -350,7 +353,7 @@ Item *setItem(DynamicArray *itemArray, int transitionedSymbol, DynamicArray *fet
 
 //the copying prod takes much time
 Item *createItem(DynamicArray *itemArray, DynamicArray *fetchedProdArray, int expectedSymbol) {
-    printf("num of item: %d\n", getNumElements(itemArray));
+    printf("num of item \n");
     printf("---------------\ncreateItem: %d\n", getNumElements(fetchedProdArray));
     for (int i = 0; i < getNumElements(fetchedProdArray); i++) {
         Production *prod = (Production *)getData(fetchedProdArray, i, PRODUCTION);
