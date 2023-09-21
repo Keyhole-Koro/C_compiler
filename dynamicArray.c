@@ -45,7 +45,7 @@ DynamicArray *createDynamicArray(int initialCapacity, bool ifModifiable, Type ty
     arr->data = (Data **)malloc(sizeof(Data *)*initialCapacity);
     if (arr->data == NULL) error("Memory allocation failed\n");
     arr->type = type;
-    arr->offset = 0;
+    arr->offset = -1;
     arr->capacity = initialCapacity;
     arr->modifiable = ifModifiable;
     return arr;
@@ -61,8 +61,7 @@ void append(DynamicArray* arr, void *element, Type type) {
     }
     Data **copy_data = malloc(sizeof(*element));
     *copy_data = (Data *)element;
-    arr->data[arr->offset++] = *copy_data;
-    //memcpy(&(arr->data[arr->offset++]), element, getDataSize(type));
+    arr->data[++arr->offset] = *copy_data;
 }
 
 void swapElement(DynamicArray *arr, int pos1, int pos2, Type type) {
@@ -72,11 +71,10 @@ void swapElement(DynamicArray *arr, int pos1, int pos2, Type type) {
         return;
     }
 
-    if (pos1 < 0 || pos1 >= arr->offset || pos2 < 0 || pos2 >= arr->offset) {
+    if (pos1 < 0 || pos1 > getOffset(arr) || pos2 < 0 || pos2 > getOffset(arr)) {
         error("Index out of bounds: swapElement\n");
         return;
     }
-
     Data **data = arr->data;
 
     Data *temp_element = data[pos1];
@@ -116,29 +114,29 @@ int getKey(Data *data, Type type) {
 Data *getData(DynamicArray *arr, int pos, Type type) {
     if (type != arr->type) error("type mismatch: getData\n");
 
-    if (pos < 0 || pos >= arr->offset) error("Index out of bounds: getData\n");
+    if (pos < 0 || pos > getOffset(arr)) error("Index out of bounds: getData\n");
 
     return arr->data[pos];
 }
 
 void removeLastElement(DynamicArray *arr) {
-    free(arr->data[arr->offset]);
+    free(arr->data[getOffset(arr)]);
     arr->offset--;
 }
 
 int getOffset(DynamicArray* arr) {
-    return arr->offset -1 ;
+    return arr->offset;
 }
 
 int getNumElements(DynamicArray *arr) {
-    return arr->offset;
+    return arr->offset + 1;
 }
 
 //this only fetch one data but muiltiple
 int fetchPosition(DynamicArray *arr, bool (customCmp)(Data*, Data*), Data* expectedValue, Type type) {
     if (type != arr->type) error("Type mismatch: fetchPosition\n");
     Data *d;
-    for (int i = 0; i < arr->offset; i++) {
+    for (int i = 0; i < getNumElements(arr); i++) {
         d = getData(arr, i, type);
         if (customCmp(d, expectedValue)) return i;
     }
@@ -150,9 +148,11 @@ DynamicArray *fetchMultiPositions(DynamicArray *arr, bool (customCmp)(Data*, Dat
     if (type != arr->type) error("Type mismatch: fetchPosition\n");
     DynamicArray *dArr = createDynamicArray(getNumElements(arr), false, INT);
     int offset = 0;
-    for (int i = 0; i < arr->offset; i++) {
+    for (int i = 0; i < getNumElements(arr); i++) {
         Data *d = getData(arr, i, type);
-        if (customCmp(d, expectedValue)) append(dArr, &i, INT);
+		int *n = malloc(sizeof(int));
+		*n = i;
+        if (customCmp(d, expectedValue)) append(dArr, &n, INT);
     }
     return dArr;
 }
@@ -163,7 +163,7 @@ DynamicArray *duplicateArray(DynamicArray *originalArr, bool ifModifiable) {
 
     for (int i = 0; i < getNumElements(originalArr); i++) {
         Data *copied_data = (Data *)malloc(getDataSize(type));
-        *copied_data = *getData(originalArr, i, type);
+		memcpy(copied_data, getData(originalArr, i, type), getDataSize(type));
         append(duplicatedArray, copied_data, type);
     }
 
@@ -171,11 +171,10 @@ DynamicArray *duplicateArray(DynamicArray *originalArr, bool ifModifiable) {
 }
 
 
-void deprioritizeArray(DynamicArray *arr, int pos_deprioritized, Type type) {
-    if (type != arr->type) error("Type mismatch: deprioritizeArray\n");
-    if (getNumElements(arr) >= 2) return;
+void swapRemoveElement(DynamicArray *arr, int pos_deprioritized, Type type) {
+    if (type != arr->type) error("Type mismatch: swapRemoveElement\n");
+    if (getNumElements(arr) < 2) return;
     swapWithLastElement(arr, pos_deprioritized, type);
-    
     removeLastElement(arr);
 }
 
@@ -191,13 +190,37 @@ int calculateSetHash(DynamicArray *array, int (referentElement)(Data*, Type type
     return hash;
 }
 
-//this function sees the addresses but the value
-//void eliminateOverlap(DynamicArray *arr) {
-    
-//}
+//modify not to eliminate original one
+void eliminateOverlap(DynamicArray *arr, int (referentElement)(Data*, Type type), Type type) {
+    int numElements = getNumElements(arr);
+    unsigned char ifExistingArray[numElements];
+
+    for (int i = 0; i < numElements; i++) {
+        ifExistingArray[i] = 0;
+    }
+	for (int i = 0; i < getNumElements(arr); i++) {
+		Data *data = getData(arr, i, type);
+		if (ifExistingArray[referentElement(data, type)] == 1) {
+			swapRemoveElement(arr, i, type);
+			continue;
+		}
+		ifExistingArray[referentElement(data, type)] = 1;
+	}
+}
 
 Production *getProd_Item(Item *item, Type type) {
     if (type != ITEM) error("type mismatch: getProd_Item\n");
     Production *prod = item->Productions;
     return prod;
+}
+
+unsigned char *createNormalUnsignedCharArray(int size) {
+	unsigned char *unsignedCharArray = (unsigned char *)calloc(size, sizeof(unsigned char));
+	return unsignedCharArray;
+}
+
+void initializeUnsignedCharArraywithZero(unsigned char *unsignedCharArray) {
+	for (int i = 0; i < sizeof(unsignedCharArray); i++) {
+		unsignedCharArray[i] = 0;
+	}
 }
