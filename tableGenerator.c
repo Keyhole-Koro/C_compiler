@@ -45,15 +45,15 @@ enum {
 //{EXPR, ADD, TERM}
 //   0    1     2
 Production productions[] = {
-    {0, EXPR, {EXPR, END, -1, -1, -1, -1, -1, -1, -1, -1}, 0, EXPR},
-    {1, EXPR, {EXPR, ADD, TERM, -1, -1, -1, -1, -1, -1, -1}, 0, EXPR},
-    {2, EXPR, {EXPR, SUB, TERM, -1, -1, -1, -1, -1, -1, -1}, 0, EXPR},
-    {3, EXPR, {TERM, -1, -1, -1, -1, -1, -1, -1, -1, -1}, 0, TERM},
-    {4, TERM, {TERM, MUL, FACTOR, -1, -1, -1, -1, -1, -1, -1}, 0, TERM},
-    {5, TERM, {TERM, DIV, FACTOR, -1, -1, -1, -1, -1, -1, -1}, 0, TERM},
-    {6, TERM, {FACTOR, -1, -1, -1, -1, -1, -1, -1, -1, -1}, 0, FACTOR},
-    {7, FACTOR, {L_PARENTHESES, EXPR, R_PARENTHESES, -1, -1, -1, -1, -1, -1, -1}, 0, L_PARENTHESES},
-    {8, FACTOR, {NUM, -1, -1, -1, -1, -1, -1, -1, -1, -1}, 0, NUM},
+    {0, EXPR, {EXPR, END, -1, -1, -1, -1, -1, -1, -1, -1}, -1, 0},
+    {1, EXPR, {EXPR, ADD, TERM, -1, -1, -1, -1, -1, -1, -1}, -1, 0},
+    {2, EXPR, {EXPR, SUB, TERM, -1, -1, -1, -1, -1, -1, -1}, -1, 0},
+    {3, EXPR, {TERM, -1, -1, -1, -1, -1, -1, -1, -1, -1}, -1, 0},
+    {4, TERM, {TERM, MUL, FACTOR, -1, -1, -1, -1, -1, -1, -1}, -1, 0},
+    {5, TERM, {TERM, DIV, FACTOR, -1, -1, -1, -1, -1, -1, -1}, -1, 0},
+    {6, TERM, {FACTOR, -1, -1, -1, -1, -1, -1, -1, -1, -1}, -1, 0},
+    {7, FACTOR, {L_PARENTHESES, EXPR, R_PARENTHESES, -1, -1, -1, -1, -1, -1, -1}, -1, 0},
+    {8, FACTOR, {NUM, -1, -1, -1, -1, -1, -1, -1, -1, -1}, -1, 0},
 };
 
 Production empty_prod_instance = {-1, -1, {-1}, -1, -1};
@@ -255,7 +255,7 @@ Item *setItem(DynamicArray *itemArray, int stateId, int transitionedSymbol, Dyna
  |Item    |      Symbol     |Item    |
   ---------                  --------
  */
-DynamicArray *setUpTransistedProd(DynamicArray *oldProdArray, Type type) {
+DynamicArray *setUpDupliSortUpdateProd(DynamicArray *oldProdArray, Type type) {
     if (type != PRODUCTION) error("type mismatch: setSymbol\n");
     DynamicArray *duplicatedProdsArray = duplicateArray(oldProdArray, true);
     sortProd(duplicatedProdsArray, leftGetter, 0, getOffset(duplicatedProdsArray), PRODUCTION);
@@ -299,14 +299,12 @@ DynamicArray *extractProd(DynamicArray *copiedProdArray, int expectedSymbol) {
 void prodTransitter(DynamicArray *itemArray, DynamicArray *gatheredProdArray, DynamicArray *symbolArray) {
 
     //eliminateOverlap(gatheredProdArray, getKey, PRODUCTION);
-
-    DynamicArray *updatedProdArray = setUpTransistedProd(gatheredProdArray, PRODUCTION);
     DynamicArray *newItems = createDynamicArray(getNumElements(symbolArray), false, ITEM);
     
     //this part is supposed to be done before createItem() below
     int cur_latest_num_item = getOffset(itemArray);
-    for (int i = 0; i < getNumElements(updatedProdArray); i++) {
-        Production *prod = (Production *)getData(updatedProdArray, i, PRODUCTION);
+    for (int i = 0; i < getNumElements(gatheredProdArray); i++) {
+        Production *prod = (Production *)getData(gatheredProdArray, i, PRODUCTION);
         int *symbol = &(prod->cur_symbol);
 		
 		if (*symbol == END) continue;
@@ -359,13 +357,14 @@ Item *fetchItem(DynamicArray *itemArray, DynamicArray *prodArray, int expectedSy
 //the copying prod takes much time
 Item *createItem(DynamicArray *itemArray, DynamicArray *fetchedProdArray, int expectedSymbol) {
 	printf("createItem: %d\n", getNumElements(itemArray));
-    Item *existingItem = fetchItem(itemArray, fetchedProdArray, expectedSymbol);
+    DynamicArray *duplicatedProdArray = setUpDupliSortUpdateProd(fetchedProdArray, PRODUCTION);
+    Item *existingItem = fetchItem(itemArray, duplicatedProdArray, expectedSymbol);
 	if (existingItem->stateId != -1) {
         return existingItem;
     } else {
         DynamicArray *fetchedSymbolArray = createDynamicArray(10, true, INT);
 
-		DynamicArray *gatheredProdArray = gatherNessesaryProds(fetchedProdArray, fetchedSymbolArray);
+		DynamicArray *gatheredProdArray = gatherNessesaryProds(duplicatedProdArray, fetchedSymbolArray);
 		printf("the num of elements in gathered prod array: %d\n", getNumElements(gatheredProdArray));
 		Item *cur_latest_item = setItem(itemArray, getNumElements(itemArray), expectedSymbol, gatheredProdArray);
 

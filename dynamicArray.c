@@ -27,7 +27,7 @@ DynamicArray*
  originalProd: 0 1 2 3 4 5
  ----
  fetchedProdArray: 2
- duplicatedProdsArray: 0 1 5 3 4
+ duplicatedProdsArray: 0 1 5 3 4//2 is removed
  originalProd: 0 1 2 3 4 5//doesnt be changed
  */
 
