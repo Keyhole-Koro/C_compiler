@@ -1,13 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-typedef struct Vector Vector;
-typedef struct Token Token;
-typedef struct Buffer Buffer;
-
 typedef struct {
-    Token *token;
-    Buffer *buffer_idx;
+    struct Token *token;
+    struct Buffer *buffer_idx;
     size_t capacity;
     size_t size;
 } Vector;
@@ -22,20 +18,6 @@ typedef struct {
     char *end_idx;
 } Buffer;
 
-Vector *createVector() {
-    Vector *vec = (Vector *)malloc(sizeof(Vector));
-    if (vec == NULL) {
-        perror("Failed to allocate memory for vector");
-        exit(1);
-    }
-    vec->token = NULL;
-    vec->buffer_idx = NULL;
-    vec->size = 0;
-    vec->capacity = 0;
-
-    return vec;
-}
-
 Token *createToken(int tk) {
     Token *token = (Token *)malloc(sizeof(Token));
     if (token == NULL) {
@@ -46,7 +28,7 @@ Token *createToken(int tk) {
     return token;
 }
 
-Buffer *createBuffer(const char *start_idx, const char *end_idx) {
+Buffer *createBuffer(char *start_idx, char *end_idx) {
     Buffer *buffer = (Buffer *)malloc(sizeof(Buffer));
     if (buffer == NULL) {
         perror("Failed to allocate memory for buffer");
@@ -78,14 +60,6 @@ void ensureCapacity(Vector *vec, size_t min_capacity) {
     }
 }
 
-Vector getVec(Vector *vec, int index) {
-    if (index < 0 || index >= vec->size) {
-        fprintf(stderr, "Error: Index out of bounds\n");
-        exit(1);
-    }
-    return vec[index];
-}
-
 Vector *createVector_Token_Buffer(int tk, const char *start_idx, const char *end_idx) {
     Vector *vec = createVector();
     vec->token = createToken(tk);
@@ -94,21 +68,25 @@ Vector *createVector_Token_Buffer(int tk, const char *start_idx, const char *end
 }
 
 void pushBack(Vector *vec, Vector *addedVec) {
-    ensureCapacity(vec, vec->size + 40);
-    vec[vec->size++] = *addedVec;
+    ensureCapacity(vec, vec->size + 1); // Increase capacity by 1
+    vec->token[vec->size] = *(addedVec->token); // Copy token
+    vec->buffer_idx[vec->size] = *(addedVec->buffer_idx); // Copy buffer
+    vec->size++;
 }
-/*
+
 int main() {
     Vector *vec = createVector();
 
     Vector addedVec;
-    // Initialize addedVec here
+    addedVec.token = createToken(42); // Example token value
+    addedVec.buffer_idx = createBuffer("start", "end"); // Example buffer values
 
     pushBack(vec, &addedVec);
 
     // Clean up
+    free(addedVec.token);
+    free(addedVec.buffer_idx);
     free(vec);
 
     return 0;
 }
-*/

@@ -51,4 +51,7 @@ Production *getProd_Item(Item *item, Type);
 unsigned char *createNormalUnsignedCharArray(int size);
 void initializeUnsignedCharArraywithZero(unsigned char *intArray);
 
+int qsortPartition(DynamicArray *arr, int (referentFunc)(Data *, Type), int low, int high, Type type);
+void quickSort(DynamicArray *arr, int (referentFunc)(Data *, Type), int low, int high, Type type);
+
 #endif

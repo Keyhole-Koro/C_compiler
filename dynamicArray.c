@@ -224,3 +224,32 @@ void initializeUnsignedCharArraywithZero(unsigned char *unsignedCharArray) {
 		unsignedCharArray[i] = 0;
 	}
 }
+
+int qsortPartition(DynamicArray *arr, int (referentFunc)(Data *, Type), int low, int high, Type type) {
+    if (type != PRODUCTION) error("type mismatch: qsortPartition\n");
+    Data *high_prod = getData(arr, high, PRODUCTION);
+    int pivot = referentFunc(high_prod, type);
+    Data *j_prod;
+    int i = (low - 1);
+
+    for (int j = low; j <= high - 1; j++) {
+        j_prod = getData(arr, j, PRODUCTION);
+        if (referentFunc(j_prod, type) < pivot) {
+            i++;
+            swapElement(arr, i, j, PRODUCTION);
+        }
+    }
+    swapElement(arr, i + 1, high, PRODUCTION);
+    return (i + 1);
+}
+
+//sort productions according the number of symbols
+void quickSort(DynamicArray *arr, int (referentFunc)(Data *, Type), int low, int high, Type type) {
+    if (type != PRODUCTION) error("type mismatch: quickSort\n");
+    if (low < high) {
+        int pi = qsortPartition(arr, referentFunc, low, high, PRODUCTION);
+
+        quickSort(arr, referentFunc, low, pi - 1, PRODUCTION);
+        quickSort(arr, referentFunc, pi + 1, high, PRODUCTION);
+    }
+}
