@@ -23,3 +23,28 @@ void error(char ch[]) {
     fprintf(stderr, "%s", ch);
     exit(1);
 }
+
+void initializeItem(Item *item) {
+	item->stateId = -1;
+	item->transitionedSymbol = -1;
+	item->Productions = dummy_prod;
+	item->hashed_keys = -1;
+}
+
+void initializeProduction(Production *prod) {
+	prod->key = -1;
+	prod->left = -1;
+	prod->right = (int *){-1,-1,-1,-1,-1,-1,-1,-1,-1,-1};
+	prod->readPosition = -;
+	prod->cur_symbol = -1;
+}
+
+Item *setItem(DynamicArray *itemArray, int stateId, int transitionedSymbol, DynamicArray *fetchedProdArray) {
+    Item *new_item = (Item *)malloc(sizeof(Item));
+    new_item->stateId = stateId;
+    new_item->transitionedSymbol = transitionedSymbol;
+    new_item->Productions = (Production *)fetchedProdArray;
+    new_item->hashed_keys = calculateSetHash(fetchedProdArray, getKey, PRODUCTION);
+    append(itemArray, new_item, ITEM);
+    return new_item;
+}

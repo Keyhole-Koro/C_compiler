@@ -25,7 +25,7 @@ typedef struct Item {
     int stateId;
     int transitionedSymbol;
     Production *Productions;
-    int hashed_keys;
+    int hashed_keys;//of keys of productions
     Item *transitionDestinations;
 } Item;
 
@@ -36,8 +36,21 @@ typedef enum {
     ITEM,
 } Type;
 
+void initializeItem(Item *item);
+
+void initializeProduction(Production *prod);
+
 size_t getDataSize(Type tp);
 
 void error(char ch[]);
+
+
+Item *setItem(DynamicArray *itemArray, int stateId, int transitionedSymbol, DynamicArray *fetchedProdArray);
+
+Production *dummy_prod;
+initializeProduction(dummy_prod);
+
+Item *dummy_item;
+initializeItem(dummy_item);
 
 #endif

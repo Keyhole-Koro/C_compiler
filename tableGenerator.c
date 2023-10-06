@@ -1,21 +1,8 @@
-#include <ctype.h>
-#include <stdarg.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#include "dynamicArray.h"
-#include "utilities.h"
-
-#include <unistd.h>
-
-
-Item *createItem(DynamicArray *itemArray, DynamicArray *fetchedProdArray, int expectedSymbol);
-DynamicArray *setUpDupliSortUpdateProd(DynamicArray *oldProdArray, Type type);
+#include "tableGenerator.h"
 
 enum {
-    NUM = 1,      //number
+	TERMIANL_START = 1,
+    NUM,      //number
     ADD,      // +
     SUB,      // -
     MUL,      // *
@@ -30,7 +17,8 @@ enum {
 	
 	FIRST,
     
-    EXPR = 256, // E
+	NON_TERMIANL_START = 256,
+    EXPR, // E
     TERM, // T
     FACTOR, // F
     ACCEPTED, //accept
@@ -57,12 +45,12 @@ Production productions[] = {
     {8, FACTOR, {NUM, -1, -1, -1, -1, -1, -1, -1, -1, -1}, -1, -1},
 };
 
-Production empty_prod_instance = {-1, -1, {-1}, -1, -1};
-Production *empty_prod = &empty_prod_instance;
 
-Item null_item_instance;
-Item *null_item = &null_item_instance;
-null_item->stateId = -1;
+//may not needed
+void appendCopiedOriginalProd(DynamicArray *arr, int key, Type type) {
+	if (type != PRODUCTION) error("type mismatch: appendCopiedOriginalProd");
+	appendCopied(arr, &productions[key], type);
+}
 
 void printProd(DynamicArray *arr, Type type) {
 	if (type != PRODUCTION) error("type mismatch: printProd\n");
@@ -74,7 +62,7 @@ void printProd(DynamicArray *arr, Type type) {
 }
 
 bool isNonTerminal(int symbol) {
-    if (symbol >= 256) return true;
+    if (symbol >= NON_TERMIANL_START) return true;
     return false;
 }
 
@@ -130,14 +118,27 @@ void appendSymbol(DynamicArray *SymbolArray, int cur_symbol) {
 	prioritizeSymbol(SymbolArray, cur_symbol);
 }
 
+void updateCur_Symbol(DynamicArray *prodArr, Type type) {
+    if (type != PRODUCTION) error("type mismatch: setSymbol\n");
+    for (int i = 0; i < getNumElements(prodArr); i++) {
+        Production *prod = (Production *)getData(prodArr, i, PRODUCTION);
+        //look ahead and increament
+		if (prod->cur_symbol == -1) continue;
+        int pos = ++prod->readPosition;
+        //update cur_symbol
+        int symbol = prod->right[pos];
+        prod->cur_symbol = symbol;
+		printf("pos symbol cur_symbol at updateCur_symbol(): %d %d %d\n", pos, symbol, cur_symbol);
+    }
+}
+
+
 DynamicArray *insertProds() {
 	int size = ARRAY_LENGTH(productions);
     DynamicArray *originalProdArray = createDynamicArray(size, true, PRODUCTION);
 	
     for (int i = 0; i < size; i++) {
-        Production *copied_prod = malloc(sizeof(Production));
-        *copied_prod = productions[i];
-        append(originalProdArray, copied_prod, PRODUCTION);
+        appendCopiedOriginalProd(originalProdArray, i, PRODUCTION);
     }
 	return originalProdArray;
 }
@@ -147,19 +148,6 @@ DynamicArray *setUpOriginalProd() {
 
     quickSort(originalProdArary, cur_symbolGetter, 0, getOffset(originalProdArary), PRODUCTION);
     return originalProdArary;
-}
-
-unsigned char *setUpUnsignedCharArray(DynamicArray *fetchedProdArray, int num_original_prod) {
-	unsigned char *ifExistingArray = createNormalUnsignedCharArray(num_original_prod);
-	
-	initializeUnsignedCharArraywithZero(ifExistingArray);
-	
-	//to eliminate excess prod which overlap with fetchedProdArray
-	for (int i = 0; i < getNumElements(fetchedProdArray); i++) {
-		Production *prod = (Production *)getData(fetchedProdArray, i, PRODUCTION);
-		ifExistingArray[prod->key] = 1;
-	}
-	return ifExistingArray;
 }
 
 //make this recursive function
@@ -199,7 +187,8 @@ DynamicArray *gatherNessesaryProds(DynamicArray *fetchedProdArray, DynamicArray 
 	
 	int num_original_prod = getNumElements(originalProdArray);
 	
-	unsigned char *ifExistingArray = setUpUnsignedCharArray(fetchedProdArray, num_original_prod);
+	//second parameter is invalid
+	unsigned char *ifExistingArray = setUpUnsignedChar(fetchedProdArray, num_original_prod, type);
 	
 	
     for (int i = 0; i < num_elements; i++) {
@@ -219,28 +208,6 @@ DynamicArray *gatherNessesaryProds(DynamicArray *fetchedProdArray, DynamicArray 
     }
 	
     return fetchedProdArray;
-}
-
-void updateCur_Symbol(DynamicArray *prodArr, Type type) {
-    if (type != PRODUCTION) error("type mismatch: setSymbol\n");
-    for (int i = 0; i < getNumElements(prodArr); i++) {
-        Production *prod = (Production *)getData(prodArr, i, PRODUCTION);
-        //look ahead and increament
-        int pos = ++prod->readPosition;
-        //update cur_symbol
-        int symbol = prod->right[pos];
-        prod->cur_symbol = symbol;
-    }
-}
-
-Item *setItem(DynamicArray *itemArray, int stateId, int transitionedSymbol, DynamicArray *fetchedProdArray) {
-    Item *new_item = (Item *)malloc(sizeof(Item));
-    new_item->stateId = stateId;
-    new_item->transitionedSymbol = transitionedSymbol;
-    new_item->Productions = (Production *)fetchedProdArray;
-    new_item->hashed_keys = calculateSetHash(fetchedProdArray, getKey, PRODUCTION);
-    append(itemArray, new_item, ITEM);
-    return new_item;
 }
 
 /*
@@ -325,7 +292,7 @@ bool isExsistingItem(Item *referentItem, Production *prod) {
 
 Item *fetchItem(DynamicArray *itemArray, DynamicArray *prodArray, int expectedSymbol) {
 	//make this outside
-    if (getNumElements(itemArray) == 0) return null_item;
+    if (getNumElements(itemArray) == 0) return dummy_item;
     Item *latest_arr = (Item *)getData(itemArray, getOffset(itemArray), ITEM);
     DynamicArray *pos_items = fetchMultiPositions(itemArray, cmpTransitionedSymbol, (Data *)&expectedSymbol, ITEM);
     for (int i = 0; i < getNumElements(pos_items); i++) {
@@ -335,7 +302,7 @@ Item *fetchItem(DynamicArray *itemArray, DynamicArray *prodArray, int expectedSy
     }
     destroyDynamicArray(pos_items);
 	
-    return null_item;
+    return dummy_item;
 }
 
 //the copying prod takes much time
@@ -362,11 +329,62 @@ Item *createItem(DynamicArray *itemArray, DynamicArray *fetchedProdArray, int ex
 }
 
 int main() {
+    // Test Case 1: Creating and appending elements to a dynamic array
+    DynamicArray *arr = createDynamicArray(5, true, false, INT);
+    int element1 = 10;
+    int element2 = 20;
+    int element3 = 30;
+    append(arr, &element1, INT);
+    append(arr, &element2, INT);
+    append(arr, &element3, INT);
+
+    // Test Case 2: Swapping elements in the dynamic array
+    printf("Original Array: ");
+    for (int i = 0; i <= getOffset(arr); ++i) {
+        int *value = (int *)getData(arr, i, INT);
+        printf("%d ", *value);
+    }
+    printf("\n");
+
+    swapElement(arr, 0, 2, INT);
+
+    printf("Array after swapping: ");
+    for (int i = 0; i <= getOffset(arr); ++i) {
+        int *value = (int *)getData(arr, i, INT);
+        printf("%d ", *value);
+    }
+    printf("\n");
+
+    // Test Case 3: Sorting elements in the dynamic array
+    printf("Array before sorting: ");
+    for (int i = 0; i <= getOffset(arr); ++i) {
+        int *value = (int *)getData(arr, i, INT);
+        printf("%d ", *value);
+    }
+    printf("\n");
+
+    quickSort(arr, getKey, 0, getOffset(arr), INT);
+
+    printf("Array after sorting: ");
+    for (int i = 0; i <= getOffset(arr); ++i) {
+        int *value = (int *)getData(arr, i, INT);
+        printf("%d ", *value);
+    }
+    printf("\n");
+
+    // Test Case 4: Cleaning up and destroying the dynamic array
+    destroyDynamicArray(arr);
+
+    return 0;
+}
+/*
+int main() {
     DynamicArray *itemArray = createDynamicArray(10, false, ITEM);
     DynamicArray *fetchedProdArray = createDynamicArray(10, true, PRODUCTION);
     append(fetchedProdArray, &productions[0], PRODUCTION);
     Item *first_item = createItem(itemArray, fetchedProdArray, FIRST);//FIRST temporary
 }
+*/
 
 //createFirst()
 //getFirst()
