@@ -39,12 +39,11 @@ void initializeProduction(Production *prod) {
 	prod->cur_symbol = -1;
 }
 
-Item *setItem(DynamicArray *itemArray, int stateId, int transitionedSymbol, DynamicArray *fetchedProdArray) {
+Item *setItem(int stateId, int transitionedSymbol, int hashed_keys) {
     Item *new_item = (Item *)malloc(sizeof(Item));
     new_item->stateId = stateId;
     new_item->transitionedSymbol = transitionedSymbol;
     new_item->Productions = (Production *)fetchedProdArray;
-    new_item->hashed_keys = calculateSetHash(fetchedProdArray, getKey, PRODUCTION);
-    append(itemArray, new_item, ITEM);
+    new_item->hashed_keys = hashed_keys;
     return new_item;
 }

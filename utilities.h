@@ -4,30 +4,28 @@
 #define ARRAY_LENGTH(arr) (sizeof(arr) / sizeof(arr[0]))
 #define SIZE_OF_A_MEMORY (8)
 
-#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
-//#include "commonData.h"
+typedef struct Production Production;
 
-typedef struct {
+struct Production {
     int key;
     int left;
     int right[10]; // modify later
     int readPosition;
     int cur_symbol;
-} Production;
+};
 
 typedef struct Item Item;
 
-typedef struct Item {
+struct Item {
     int stateId;
     int transitionedSymbol;
     Production *Productions;
     int hashed_keys;//of keys of productions
     Item *transitionDestinations;
-} Item;
+};
 
 
 typedef enum {
@@ -45,12 +43,12 @@ size_t getDataSize(Type tp);
 void error(char ch[]);
 
 
-Item *setItem(DynamicArray *itemArray, int stateId, int transitionedSymbol, DynamicArray *fetchedProdArray);
+Item *setItem(int stateId, int transitionedSymbol);
 
-Production *dummy_prod;
-initializeProduction(dummy_prod);
+Production dummy_prod_instance = {-1, -1, {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1}, -1, -1};
+Production *dummy_prod = &dummy_prod_instance;
 
-Item *dummy_item;
-initializeItem(dummy_item);
+Item dummy_item_instance = {-1, -1, NULL, -1, NULL};
+Item *dummy_item = &dummy_item_instance;
 
 #endif

@@ -1,37 +1,11 @@
 #include "dynamicArray.h"
-	
-/*
-DynamicArray*
-|
-|->Data **
-	 |     --------------
-	 | -> |ptr0|ptr1|ptr2|
-		   --------------
-	 ----    ----    ----
-	|val0|  |val1|  |val2|
-	 ----    ----    ----
- value are separated
- */
 
 /*
  deprioritize()
  fetchedProdArray:
  duplicatedProdsArray: 0 1 2 3 4 5
  originalProd: 0 1 2 3 4 5
- ----
- fetchedProdArray: 2
- duplicatedProdsArray: 0 1 5 3 4//2 is removed
- originalProd: 0 1 2 3 4 5//doesnt be changed
- */
-
-/*
- swapElement()
- fetchedSymbols: E T F
- F apperd
- ----
- fetchedSymbols: F T E
- */
-
+*/
 DynamicArray *createDynamicArray(int initialCapacity, bool ifModifiable, bool ifOverlap, Type type) {
 	DynamicArray *arr = (DynamicArray *)malloc(sizeof(DynamicArray));
 	if (arr == NULL) error("Memory allocation failed\n");
@@ -44,7 +18,7 @@ DynamicArray *createDynamicArray(int initialCapacity, bool ifModifiable, bool if
 
 	arr->ifOverlap = ifOverlap;
 	if (!ifOverlap){
-		arr->ifOverlapArray = createNormalUnsignedCharArray(initialCapacity);
+		arr->ifOverlapArray = createEmptyUnsignedCharArray(initialCapacity);
 		arr->start_point = getStartPoint(type);
 	}
 	return arr;
@@ -57,51 +31,52 @@ void normalReallocateDynamicArray(DynamicArray *arr) {
 		if (arr->data == NULL) error("Memory allocation failed\n");
 	}
 }
-void normalAppend(DynamicArray *arr, void *element, Type type) {
-	if (!arr->ifOverlap) error("you are supposed to use append: normalAppend\n");
-	append(arr, element, dummy_member, type);
+void append(DynamicArray *arr, void *element, Type type) {
+	if (!arr->ifOverlap) error("you are supposed to use append: append\n");
+	conditionalAppend(arr, element, dummy_member, type);
 }
 
-void normalAppendCopied(DynamicArray *arr, void *element, Type type) {
-	if (!arr->ifOverlap) error("you are supposed to use append: normalAppendCopied\n");
-	appendCopied(arr, element, dummy_member, type);
+void appendCopy(DynamicArray *arr, void *element, Type type) {
+	if (!arr->ifOverlap) error("you are supposed to use append: appendCopy\n");
+	conditionalAppendCopy(arr, element, dummy_member, type);
 }
 
-void append(DynamicArray *arr, void *element, int (referentMember)(Data*, Type), Type type) {
-	if (arr->ifOverlap) error("you are supposed to use normal append: append\n");
+void conditionalAppend(DynamicArray *arr, void *element, int (referentMember)(Data*, Type), Type type) {
+	if (arr->ifOverlap) error("you are supposed to use normal append: conditionalAppend\n");
 	if (type != arr->type) error("type mismatch: append\n");
 
 	normalReallocateDynamicArray(arr);
 
 	whenOverlapFalse(arr, referentMember(element, type));
 
-	Data **copy_data = (Data **)malloc(sizeof(element));
-	*copy_data = (Data *)element;
-	arr->data[++arr->offset] = *copy_data;
+	Data *copied_ptr = (Data *)malloc(sizeof(element));
+    copied_ptr = (Data *)element;
+	arr->data[++arr->offset] = copied_ptr;
 }
 
-void appendCopied(DynamicArray *arr, void *element, int (referentMember)(Data*, Type), Type type) {
-	if (arr->ifOverlap) error("you are supposed to use normal append: appendCopied\n");
+void conditionalAppendCopy(DynamicArray *arr, void *element, int (referentMember)(Data*, Type), Type type) {
+	if (arr->ifOverlap) error("you are supposed to use normal append: conditionalAppendCopy\n");
 	if (type != arr->type) error("type mismatch: append\n");
 	
 	normalReallocateDynamicArray(arr);
 
 	whenOverlapFalse(arr, referentMember(element, type));
 
-	Data **copy_data = (Data **)malloc(sizeof(element));
-	**copy_data = (Data)*element;
-	arr->data[++arr->offset] = *copy_data;
+	Data *copy_data_ptr = (Data *)malloc(getDataSize(type));
+	*copy_data_ptr = *(Data *)element;
+	arr->data[++arr->offset] = copy_data_ptr;
 }
 
 void whenOverlapFalse(DynamicArray *arr, int index) {
 	if (!arr->ifOverlap) {
-		int eventual_index = index - start_point;
+		int eventual_index = index - arr->start_point;
+        if (eventual_index > 100) printf("warning: eventual_index == %d\n", eventual_index);
 		if (arr->ifOverlapArray[eventual_index] == 1) return;
-		appendOverlaArray(arr, eventual_index);
+		appendAtIndexOverlapArray(arr, eventual_index);
 	}
 }
 
-void appendOverlapArray(DynamicArray *arr, int index) {
+void appendAtIndexOverlapArray(DynamicArray *arr, int index) {
 	printf("index: %d\n", index);
 	if (index > arr->capacity) {
 		arr->data = realloc(arr->data, index * sizeof(unsigned char));
@@ -117,7 +92,7 @@ void swapElement(DynamicArray *arr, int pos1, int pos2, Type type) {
 		return;
 	}
 
-	if (pos1 < 0 || pos1 > getOffset(arr) || pos2 < 0 || pos2 > getOffset(arr)) {
+	if (pos1 < 0 || pos1 > getArrayOffset(arr) || pos2 < 0 || pos2 > getArrayOffset(arr)) {
 		error("Index out of bounds: swapElement\n");
 		return;
 	}
@@ -128,7 +103,7 @@ void swapElement(DynamicArray *arr, int pos1, int pos2, Type type) {
 	data[pos2] = temp_element;
 }
 
-bool isOverlap_Insert_1(DynamicArray *arr, int index) {
+bool hasOverlap_Insert(DynamicArray *arr, int index) {
 	unsigned char *ifOverlapArray = arr->ifOverlapArray;
 	if (ifOverlapArray[index] == 1) return true;
 	ifOverlapArray[index] = 1;
@@ -137,7 +112,7 @@ bool isOverlap_Insert_1(DynamicArray *arr, int index) {
 
 void initializeDynamicArray(DynamicArray *arr) {
 	arr->type = -1;
-	arr->data = dummy_data;
+	arr->data = &dummy_data;
 	arr->ifOverlap = false;
 	//arr-> overlapArray
 	arr->offset = -1;
@@ -146,7 +121,7 @@ void initializeDynamicArray(DynamicArray *arr) {
 }
 
 void swapWithLastElement(DynamicArray *arr, int pos, Type type) {
-	swapElement(arr, pos, getOffset(arr), type);
+	swapElement(arr, pos, getArrayOffset(arr), type);
 }
 
 
@@ -167,8 +142,8 @@ bool cmpTransitionedSymbol(Data* data, Data* expectedValue) {
 	return item->transitionedSymbol == *compedValue;
 }
 
-int getKey(Data *data, Type type) {
-	if (type != PRODUCTION) error("type mismatch: getKey\n");
+int getElementKey(Data *data, Type type) {
+	if (type != PRODUCTION) error("type mismatch: getElementKey\n");
 	Production *prod = (Production *)data;
 	return prod->key;
 }
@@ -177,24 +152,24 @@ int dummy_member(Data *data, Type type) {
 	return -1;
 }
 
-Data *getData(DynamicArray *arr, int pos, Type type) {
-	if (type != arr->type) error("type mismatch: getData\n");
+Data *retriveData(DynamicArray *arr, int pos, Type type) {
+	if (type != arr->type) error("type mismatch: retriveData\n");
 
-	if (pos < 0 || pos > getOffset(arr)) error("Index out of bounds: getData\n");
+	if (pos < 0 || pos > getArrayOffset(arr)) error("Index out of bounds: retriveData\n");
 
 	return arr->data[pos];
 }
 
 void removeLastElement(DynamicArray *arr) {
-	free(arr->data[getOffset(arr)]);
+	free(arr->data[getArrayOffset(arr)]);
 	arr->offset--;
 }
 
-int getOffset(DynamicArray* arr) {
+int getArrayOffset(DynamicArray* arr) {
 	return arr->offset;
 }
 
-int getNumElements(DynamicArray *arr) {
+int getArraySize(DynamicArray *arr) {
 	return arr->offset + 1;
 }
 
@@ -202,121 +177,132 @@ int getNumElements(DynamicArray *arr) {
 int fetchPosition(DynamicArray *arr, bool (customCmp)(Data*, Data*), Data* expectedValue, Type type) {
 	if (type != arr->type) error("Type mismatch: fetchPosition\n");
 	Data *d;
-	for (int i = 0; i < getNumElements(arr); i++) {
-		d = getData(arr, i, type);
+	for (int i = 0; i < getArraySize(arr); i++) {
+		d = retriveData(arr, i, type);
 		if (customCmp(d, expectedValue)) return i;
 	}
 	error("Not found\n");
 	return -1;
 }
 
-DynamicArray *fetchMultiPositions(DynamicArray *arr, bool (customCmp)(Data*, Data*), Data *expectedValue, Type type) {
-	if (type != arr->type) error("Type mismatch: fetchPosition\n");
-	DynamicArray *dArr = createDynamicArray(getNumElements(arr), false, INT);
-	int offset = 0;
-	for (int i = 0; i < getNumElements(arr); i++) {
-		Data *d = getData(arr, i, type);
-		int *n = malloc(sizeof(int));
-		*n = i;
-		if (customCmp(d, expectedValue)) append(dArr, &n, INT);
-	}
-	return dArr;
+//bool cmpHash_tranSymbol(Data *data1, Data *data2) {}
+
+//when hash and transitionedSymbol are the same
+Item *fetchMatchingItem(DynamicArray *itemArray, DynamicArray *expectedProdArray, int expectedSymbol) {
+    if (getArraySize(itemArray) == 0) return dummy_item;
+    
+    int expectedHashedKey = calculateArrayHash(expectedProdArray, getElementKey, PRODUCTION);
+    
+    //may replace here to extractCertainData()
+    for (int i = 0; getArraySize(itemArray); i++) {
+        Item *item = (Item *)retriveData(itemArray, i, ITEM);
+        if (expectedHashedKey == item->hashed_keys && expectedSymbol == item->transitionedSymbol) return item;
+    }
+    
+    return dummy_item;
 }
 
-DynamicArray *duplicateArray(DynamicArray *originalArr, bool ifModifiable) {
+DynamicArray *cloneArray(DynamicArray *originalArr, bool ifModifiable) {
 	Type type = originalArr->type;
-	DynamicArray *duplicatedArray = createDynamicArray(getNumElements(originalArr), ifModifiable, type);
+	DynamicArray *duplicatedArray = createDynamicArray(getArraySize(originalArr), ifModifiable, true, type);
 
-	for (int i = 0; i < getNumElements(originalArr); i++) {
+	for (int i = 0; i < getArraySize(originalArr); i++) {
 		Data *copied_data = (Data *)malloc(getDataSize(type));
-		memcpy(copied_data, getData(originalArr, i, type), getDataSize(type));
+		memcpy(copied_data, retriveData(originalArr, i, type), getDataSize(type));
 		append(duplicatedArray, copied_data, type);
 	}
 
 	return duplicatedArray;
 }
 
-
 void swapRemoveElement(DynamicArray *arr, int pos_deprioritized, Type type) {
 	if (type != arr->type) error("Type mismatch: swapRemoveElement\n");
-	if (getNumElements(arr) < 2) return;
+	if (getArraySize(arr) < 2) return;
 	swapWithLastElement(arr, pos_deprioritized, type);
 	removeLastElement(arr);
 }
 
-int calculateSetHash(DynamicArray *array, int (referentMember)(Data*, Type), Type type) {
-	if (type != PRODUCTION) error("type mismatch: calculateSetHash\n");
+int calculateArrayHash(DynamicArray *array, int (referentMember)(Data*, Type), Type type) {
 	int hash = 0;
 
-	for (int i = 0; i < getNumElements(array); i++) {
-		Data *data = getData(array, i, type);
+	for (int i = 0; i < getArraySize(array); i++) {
+		Data *data = retriveData(array, i, type);
 		hash ^= referentMember(data, type);
 	}
 
 	return hash;
 }
 
-DynamicArray *extractInCommon(DynamicArray *arr, int (referentMember)(Data*, Type), int expected_
-value, Type type)
+//this only return one data
+Data *extractCertainData(DynamicArray *arr, bool (customCmp)(Data*, Data* ,Type), Data *expected_data, Type type) {
+    for (int i = 0; i < getArraySize(arr); i++) {
+        Data *data = retriveData(arr, i, type);
+        if (customCmp(data, expected_data, type)) return data;
+    }
+    return dummy_data;//not yet defined
+}
 
-//not needed
-void eliminateOverlap(DynamicArray *arr, int (referentMember)(Data*, Type), Type type) {
-	int numElements = getNumElements(arr);
-	unsigned char ifExistingArray[numElements];
-
+//may not needed
+void eliminateOverlap(DynamicArray *arr, int (referentMember)(Data*, Type), int start_point, Type type) {
+	int numElements = getArraySize(arr);
+    unsigned char *ifExistingArray = createEmptyUnsignedCharArray(numElements);
+    
 	for (int i = 0; i < numElements; i++) {
-		ifExistingArray[i] = 0;
-	}
-	for (int i = 0; i < getNumElements(arr); i++) {
-		Data *data = getData(arr, i, type);
-		if (ifExistingArray[referentMember(data, type)] == 1) {
+		Data *data = retriveData(arr, i, type);
+		if (ifExistingArray[referentMember(data, type) - start_point] == 1) {
 			swapRemoveElement(arr, i, type);
 			continue;
 		}
-		ifExistingArray[referentMember(data, type)] = 1;
+		ifExistingArray[referentMember(data, type) - start_point] = 1;
 	}
+    destoryUnsignedCharArray(ifExistingArray);
 }
 
-Production *getProd_Item(Item *item, Type type) {
-	if (type != ITEM) error("type mismatch: getProd_Item\n");
+Production *getProdFromItem(Item *item, Type type) {
+	if (type != ITEM) error("type mismatch: getProdFromItem\n");
 	Production *prod = item->Productions;
 	return prod;
 }
 
-unsigned char *createNormalUnsignedCharArray(int size) {
+
+unsigned char *createEmptyUnsignedCharArray(int size) {
 	unsigned char *unsignedCharArray = (unsigned char *)calloc(size, sizeof(unsigned char));
-	initializeUnsignedCharArraywithZero(unsignedCharArray);
+	initializeUnsignedCharArraytoZero(unsignedCharArray);
 	return unsignedCharArray;
 }
 
-void initializeUnsignedCharArraywithZero(unsigned char *unsignedCharArray) {
+void initializeUnsignedCharArraytoZero(unsigned char *unsignedCharArray) {
 	for (int i = 0; i < sizeof(unsignedCharArray); i++) {
 		unsignedCharArray[i] = 0;
 	}
 }
 
-unsigned char *setUpifOverlapArray(DynamicArray *existingElementArr, int (referentMember)(Data*, Type), Type type) {
-	unsigned char *ifExistingArray = createNormalUnsignedCharArray(existingElementArr->capacity);
+void destoryUnsignedCharArray(unsigned char *arr) {
+    free(arr);
+}
+
+unsigned char *initializeOverlapArray(DynamicArray *existingElementArr, int (referentMember)(Data*, Type), Type type) {
+	unsigned char *ifExistingArray = createEmptyUnsignedCharArray(existingElementArr->capacity);
 	
-	initializeUnsignedCharArraywithZero(ifExistingArray);
+	initializeUnsignedCharArraytoZero(ifExistingArray);
 	
 	//to eliminate excess prod which overlap with fetchedProdArray
-	for (int i = 0; i < getNumElements(existingElementArr); i++) {
-		Data *data = getData(existingElementArr, i, type);
-		ifExistingArray[referentMemebr(data, type)] = 1;
+	for (int i = 0; i < getArraySize(existingElementArr); i++) {
+		Data *data = retriveData(existingElementArr, i, type);
+		ifExistingArray[referentMember(data, type)] = 1;
 	}
 	return ifExistingArray;
 }
 
 int qsortPartition(DynamicArray *arr, int (referentFunc)(Data *, Type), int low, int high, Type type) {
 	if (type != PRODUCTION) error("type mismatch: qsortPartition\n");
-	Data *high_prod = getData(arr, high, PRODUCTION);
+	Data *high_prod = retriveData(arr, high, PRODUCTION);
 	int pivot = referentFunc(high_prod, type);
 	Data *j_prod;
 	int i = (low - 1);
 
 	for (int j = low; j <= high - 1; j++) {
-		j_prod = getData(arr, j, PRODUCTION);
+		j_prod = retriveData(arr, j, PRODUCTION);
 		if (referentFunc(j_prod, type) < pivot) {
 			i++;
 			swapElement(arr, i, j, PRODUCTION);
@@ -327,8 +313,8 @@ int qsortPartition(DynamicArray *arr, int (referentFunc)(Data *, Type), int low,
 }
 
 int getStartPoint(Type type) {
-	int NON_TERMIANL_START = 256;//tmp
-	if (type == PRODUCTION) return NON_TERMINA_START;
+	int NON_TERMINAL_START = 256;//tmp
+	if (type == PRODUCTION) return NON_TERMINAL_START;
 	return 0;
 }
 //sort productions according the number of symbols
