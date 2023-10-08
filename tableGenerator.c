@@ -154,15 +154,13 @@ bool isEndProd(DynamicArray *prodArr) {
     return false;
 }
 */
-bool cmpInt(Data* data1, Data* data2) {
-    return *(int *)data1 == *(int *)data2;
-}
+
 int main() {
     initializeProduction(dummy_prod);
     initializeItem(dummy_item);
     // Test Case 1: Creating and appending elements to a dynamic array
     DynamicArray *arr = createDynamicArray(5, true, dummy_member, INT);
-    DynamicArray *arrCopy = createDynamicArray(5, true, dummy_member, INT);
+    //DynamicArray *arrCopy = createDynamicArray(5, true, getIntFromData, INT);
     int element1 = 10;
     int element2 = 20;
     int element3 = 20;
@@ -174,25 +172,26 @@ int main() {
     append(arr, ptr_ele2, INT);
     append(arr, ptr_ele3, INT);
     
-    DynamicArray *cloneArr = cloneArray(arr, arr->modifiable);
+    DynamicArray *cloneArr = cloneArray(arr, arr->modifiable, getIntFromData);
 
     // Test Case 2: Swapping elements in the dynamic array
     printf("Original Array: ");
-    for (int i = 0; i <= getArrayOffset(arr); ++i) {
+    for (int i = 0; i < getArraySize(arr); ++i) {
         int *value = (int *)retriveData(arr, i, INT);
         printf("%d ", *value);
     }
     printf("\n");
 
-    DynamicArray *fetchedArray = fetchCommonElements(arr, cmpInt, (Data *)ptr_ele1, INT);
+    //DynamicArray *fetchedArray = fetchCommonElements(arr, cmpInt, (Data *)ptr_ele1, INT);
 
-    printf("extract 20: ");
-    for (int i = 0; i <= getArrayOffset(fetchedArray); ++i) {
-        int *value = (int *)retriveData(fetchedArray, i, INT);
+
+    printf("getArraySize: %d\n", getArraySize(cloneArr));
+    printf("cloned array: ");
+    for (int i = 0; i < getArraySize(cloneArr); ++i) {
+        int *value = (int *)retriveData(cloneArr, i, INT);
         printf("%d ", *value);
     }
     printf("\n");
-
     
     return 0;
 }

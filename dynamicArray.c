@@ -42,8 +42,8 @@ void append(DynamicArray *arr, void *element, Type type) {
 
     normalReallocateDynamicArray(arr);
 
-    whenOverlapFalse(arr, arr->referentMember(element, type));
-
+    if (ifExistInOverlap(arr, arr->referentMember((Data *)element, type))) return;
+    
     Data *copied_ptr = (Data *)malloc(sizeof(element));
     copied_ptr = (Data *)element;
     arr->data[++arr->offset] = copied_ptr;
@@ -54,26 +54,25 @@ void appendCopy(DynamicArray *arr, void *element, Type type) {
     
     normalReallocateDynamicArray(arr);
 
-    whenOverlapFalse(arr, arr->referentMember(element, type));
+    if (ifExistInOverlap(arr, arr->referentMember((Data *)element, type))) return;
 
     Data *copy_data_ptr = (Data *)malloc(getDataSize(type));
     *copy_data_ptr = *(Data *)element;
     arr->data[++arr->offset] = copy_data_ptr;
 }
 
-void whenOverlapFalse(DynamicArray *arr, int index) {
-	if (!arr->ifOverlap) {
-        if (index > 100) printf("warning: eventual_index == %d\n", index);
-		if (arr->ifOverlapArray[index] == 1) return;
-		appendAtIndexOverlapArray(arr, index);
-	}
+bool ifExistInOverlap(DynamicArray *arr, int index) {
+    if (arr->ifOverlap) return false;
+    if (index > 100) printf("warning: eventual_index == %d\n", index);
+    if (arr->ifOverlapArray[index] == 1) return true;
+    appendAtIndexOverlapArray(arr, index);
+    return false;
 }
 
 void appendAtIndexOverlapArray(DynamicArray *arr, int index) {
-	printf("index: %d\n", index);
 	if (index > arr->capacity) {
-		arr->data = realloc(arr->data, index * sizeof(unsigned char));
-		if (arr->data == NULL) error("Memory allocation failed\n");
+		arr->ifOverlapArray = realloc(arr->ifOverlapArray, index * sizeof(unsigned char));
+		if (arr->ifOverlapArray == NULL) error("Memory allocation failed\n");
 	}
 	arr->ifOverlapArray[index] = 1;
 }
@@ -193,15 +192,16 @@ Item *fetchMatchingData(DynamicArray *itemArray, DynamicArray *expectedProdArray
     return dummy_item;
 }
 
-DynamicArray *cloneArray(DynamicArray *originalArr, bool ifModifiable) {
+DynamicArray *cloneArray(DynamicArray *originalArr, bool ifModifiable, int (*referentMember)(Data*, Type)) {
 	Type type = originalArr->type;
-	DynamicArray *duplicatedArray = createDynamicArray(getArraySize(originalArr), ifModifiable, originalArr->referentMember, type);
+	DynamicArray *clonedArray = createDynamicArray(getArraySize(originalArr), ifModifiable, referentMember, type);
 
 	for (int i = 0; i < getArraySize(originalArr); i++) {
-		appendCopy(duplicatedArray, retriveData(originalArr, i, type), type);
+        Data *d = retriveData(originalArr, i, type);
+		appendCopy(clonedArray, d, type);
 	}
 
-	return duplicatedArray;
+	return clonedArray;
 }
 
 void swapRemoveElement(DynamicArray *arr, int pos_deprioritized, Type type) {
@@ -315,42 +315,8 @@ void quickSort(DynamicArray *arr, int (referentFunc)(Data *, Type), int low, int
 bool cmpInt(Data* data1, Data* data2) {
     return *(int *)data1 == *(int *)data2;
 }
-int main() {
-    initializeProduction(dummy_prod);
-    initializeItem(dummy_item);
-    // Test Case 1: Creating and appending elements to a dynamic array
-    DynamicArray *arr = createDynamicArray(5, true, dummy_member, INT);
-    DynamicArray *arrCopy = createDynamicArray(5, true, dummy_member, INT);
-    int element1 = 10;
-    int element2 = 20;
-    int element3 = 20;
-    
-    int *ptr_ele1 = &element1;
-    int *ptr_ele2 = &element2;
-    int *ptr_ele3 = &element3;
-    append(arr, ptr_ele1, INT);
-    append(arr, ptr_ele2, INT);
-    append(arr, ptr_ele3, INT);
-    
-    DynamicArray *cloneArr = cloneArray(arr, arr->modifiable);
 
-    // Test Case 2: Swapping elements in the dynamic array
-    printf("Original Array: ");
-    for (int i = 0; i <= getArrayOffset(arr); ++i) {
-        int *value = (int *)retriveData(arr, i, INT);
-        printf("%d ", *value);
-    }
-    printf("\n");
-
-    DynamicArray *fetchedArray = fetchCommonElements(arr, cmpInt, (Data *)ptr_ele1, INT);
-
-    printf("extract 20: ");
-    for (int i = 0; i <= getArrayOffset(fetchedArray); ++i) {
-        int *value = (int *)retriveData(fetchedArray, i, INT);
-        printf("%d ", *value);
-    }
-    printf("\n");
-
-    
-    return 0;
+int getIntFromData(Data *data, Type type) {
+    if (type != INT) error("type mismatch: getIntFromData\n");
+    return *(int *)data;
 }
