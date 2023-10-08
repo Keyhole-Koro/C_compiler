@@ -13,6 +13,9 @@
 #include "dynamicArray.h"
 #include "utilities.h"
 
+extern Production *dummy_prod;
+extern Item *dummy_item;
+
 void appendCopiedOriginalProd(DynamicArray *arr, int key, Type type);
 
 bool isNonTerminal(int symbol);

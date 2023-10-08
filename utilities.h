@@ -6,6 +6,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+
 
 typedef struct Production Production;
 
@@ -27,6 +29,8 @@ struct Item {
     Item *transitionDestinations;
 };
 
+extern Production *dummy_prod;
+extern Item *dummy_item;
 
 typedef enum {
     INT = 128,
@@ -43,12 +47,6 @@ size_t getDataSize(Type tp);
 void error(char ch[]);
 
 
-Item *setItem(int stateId, int transitionedSymbol);
-
-Production dummy_prod_instance = {-1, -1, {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1}, -1, -1};
-Production *dummy_prod = &dummy_prod_instance;
-
-Item dummy_item_instance = {-1, -1, NULL, -1, NULL};
-Item *dummy_item = &dummy_item_instance;
+Item *setItem(int stateId, int transitionedSymbol, int hashed_keys);
 
 #endif

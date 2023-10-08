@@ -45,7 +45,7 @@ Production productions[] = {
     {8, FACTOR, {NUM, -1, -1, -1, -1, -1, -1, -1, -1, -1}, -1, -1},
 };
 
-
+/*
 //may not needed
 void appendCopiedOriginalProd(DynamicArray *arr, int key, Type type) {
 	if (type != PRODUCTION) error("type mismatch: appendCopiedOriginalProd");
@@ -103,21 +103,6 @@ void removeElement(DynamicArray *arr, int i, Type type) {
     *prod = (Production)*dummy_prod;
 }
 
-void prioritizeSymbol(DynamicArray *fetchedSymbolArray, int symbol) {
-    int pos_symbol = fetchPosition(fetchedSymbolArray, cmpSymbol, (Data *)&symbol, INT);
-    //swap and prioritize the recent element to avoid excess calculate
-    if (pos_symbol != 0 && getArraySize(fetchedSymbolArray) > 1) swapWithLastElement(fetchedSymbolArray, pos_symbol, INT);
-}
-
-void appendSymbol(DynamicArray *SymbolArray, int cur_symbol) {
-	int *copied_symbol = (int *)malloc(sizeof(int *));
-	*copied_symbol = cur_symbol;
-
-	append(SymbolArray, copied_symbol, INT);
-
-	prioritizeSymbol(SymbolArray, cur_symbol);
-}
-
 void updateCur_Symbol(DynamicArray *prodArr, Type type) {
     if (type != PRODUCTION) error("type mismatch: setSymbol\n");
     for (int i = 0; i < getArraySize(prodArr); i++) {
@@ -134,7 +119,7 @@ void updateCur_Symbol(DynamicArray *prodArr, Type type) {
 
 DynamicArray *insertProds() {
 	int size = ARRAY_LENGTH(productions);
-    DynamicArray *originalProdArray = createDynamicArray(size, true, true, PRODUCTION);
+    DynamicArray *originalProdArray = createDynamicArray(size, true, dummy_member, PRODUCTION);
 	
     for (int i = 0; i < size; i++) {
         appendCopiedOriginalProd(originalProdArray, i, PRODUCTION);
@@ -149,12 +134,7 @@ DynamicArray *setUpOriginalProd() {
     return originalProdArary;
 }
 
-/*
- ------  transistedProds_Item  ------
- |create  |-----------------|create  |
- |Item    |      Symbol     |Item    |
-  ---------                  --------
- */
+
 DynamicArray *setUpDupliSortUpdateProd(DynamicArray *oldProdArray, Type type) {
     if (type != PRODUCTION) error("type mismatch: setSymbol\n");
     DynamicArray *duplicatedProdsArray = cloneArray(oldProdArray, true);
@@ -173,19 +153,28 @@ bool isEndProd(DynamicArray *prodArr) {
     if (singleProd->right[pos_read + 1] == -1) return true;
     return false;
 }
-
-
+*/
+bool cmpInt(Data* data1, Data* data2) {
+    return *(int *)data1 == *(int *)data2;
+}
 int main() {
     initializeProduction(dummy_prod);
     initializeItem(dummy_item);
     // Test Case 1: Creating and appending elements to a dynamic array
-    DynamicArray *arr = createDynamicArray(5, true, false, INT);
+    DynamicArray *arr = createDynamicArray(5, true, dummy_member, INT);
+    DynamicArray *arrCopy = createDynamicArray(5, true, dummy_member, INT);
     int element1 = 10;
     int element2 = 20;
-    int element3 = 30;
-    append(arr, &element1, INT);
-    append(arr, &element2, INT);
-    append(arr, &element3, INT);
+    int element3 = 20;
+    
+    int *ptr_ele1 = &element1;
+    int *ptr_ele2 = &element2;
+    int *ptr_ele3 = &element3;
+    append(arr, ptr_ele1, INT);
+    append(arr, ptr_ele2, INT);
+    append(arr, ptr_ele3, INT);
+    
+    DynamicArray *cloneArr = cloneArray(arr, arr->modifiable);
 
     // Test Case 2: Swapping elements in the dynamic array
     printf("Original Array: ");
@@ -195,35 +184,16 @@ int main() {
     }
     printf("\n");
 
-    swapElement(arr, 0, 2, INT);
+    DynamicArray *fetchedArray = fetchCommonElements(arr, cmpInt, (Data *)ptr_ele1, INT);
 
-    printf("Array after swapping: ");
-    for (int i = 0; i <= getArrayOffset(arr); ++i) {
-        int *value = (int *)retriveData(arr, i, INT);
+    printf("extract 20: ");
+    for (int i = 0; i <= getArrayOffset(fetchedArray); ++i) {
+        int *value = (int *)retriveData(fetchedArray, i, INT);
         printf("%d ", *value);
     }
     printf("\n");
 
-    // Test Case 3: Sorting elements in the dynamic array
-    printf("Array before sorting: ");
-    for (int i = 0; i <= getArrayOffset(arr); ++i) {
-        int *value = (int *)retriveData(arr, i, INT);
-        printf("%d ", *value);
-    }
-    printf("\n");
-
-    quickSort(arr, getElementKey, 0, getArrayOffset(arr), INT);
-
-    printf("Array after sorting: ");
-    for (int i = 0; i <= getArrayOffset(arr); ++i) {
-        int *value = (int *)retriveData(arr, i, INT);
-        printf("%d ", *value);
-    }
-    printf("\n");
-
-    // Test Case 4: Cleaning up and destroying the dynamic array
-    destroyDynamicArray(arr);
-
+    
     return 0;
 }
 /*
