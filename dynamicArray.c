@@ -10,7 +10,7 @@
 Data dummy_data_instance = {.intData = NULL };
 Data *dummy_data = &dummy_data_instance;
 
-DynamicArray *createDynamicArray(int initialCapacity, bool ifModifiable, int (*referentMember)(Data*, Type), Type type) {
+DynamicArray *createDynamicArray(int initialCapacity, bool ifAllowModify, int (*referentMember)(Data*, Type), Type type) {
 	DynamicArray *arr = (DynamicArray *)malloc(sizeof(DynamicArray));
 	if (arr == NULL) error("Memory allocation failed\n");
 	arr->data = (Data **)malloc(sizeof(Data *)*initialCapacity);
@@ -18,16 +18,25 @@ DynamicArray *createDynamicArray(int initialCapacity, bool ifModifiable, int (*r
 	arr->type = type;
 	arr->offset = -1;
 	arr->capacity = initialCapacity;
-	arr->modifiable = ifModifiable;
+	arr->allowModify = ifAllowModify;
     
 	if (referentMember != &dummy_member){
-        arr->ifOverlap = false;
-		arr->ifOverlapArray = createEmptyUnsignedCharArray(initialCapacity);
+        arr->ifAllowOverlap = false;
+		arr->ifExistingEleArray = createEmptyUnsignedCharArray(initialCapacity);
     } else {
-        arr->ifOverlap = true;
+        arr->ifAllowOverlap
+ = true;
     }
     arr->referentMember = referentMember;
 	return arr;
+}
+
+void allowModify(DynamicArray *arr) {
+	arr->allowModify = true;
+}
+
+void disableModify(DynamicArray *arr) {
+	arr->allowModify = false;
 }
 
 void normalReallocateDynamicArray(DynamicArray *arr) {
@@ -62,23 +71,24 @@ void appendCopy(DynamicArray *arr, void *element, Type type) {
 }
 
 bool ifExistInOverlap(DynamicArray *arr, int index) {
-    if (arr->ifOverlap) return false;
-    if (index > 100) printf("warning: eventual_index == %d\n", index);
-    if (arr->ifOverlapArray[index] == 1) return true;
+    if (arr->ifAllowOverlap
+) return false;
+    if (index > 100) printf("warn: eventual_index == %d\n", index);
+    if (arr->ifExistingEleArray[index] == 1) return true;
     appendAtIndexOverlapArray(arr, index);
     return false;
 }
 
 void appendAtIndexOverlapArray(DynamicArray *arr, int index) {
 	if (index > arr->capacity) {
-		arr->ifOverlapArray = realloc(arr->ifOverlapArray, index * sizeof(unsigned char));
-		if (arr->ifOverlapArray == NULL) error("Memory allocation failed\n");
+		arr->ifExistingEleArray = realloc(arr->ifExistingEleArray, index * sizeof(unsigned char));
+		if (arr->ifExistingEleArray == NULL) error("Memory allocation failed\n");
 	}
-	arr->ifOverlapArray[index] = 1;
+	arr->ifExistingEleArray[index] = 1;
 }
 
 void swapElement(DynamicArray *arr, int pos1, int pos2, Type type) {
-	if (arr->modifiable == false) error("not allowed to be modified: swapElement\n");
+	if (arr->allowModify == false) error("not allowed to be modified: swapElement\n");
 	if (type != arr->type) {
 		error("type mismatch: swapElement\n");
 		return;
@@ -96,26 +106,26 @@ void swapElement(DynamicArray *arr, int pos1, int pos2, Type type) {
 }
 
 bool hasOverlap_Insert(DynamicArray *arr, int index) {
-	unsigned char *ifOverlapArray = arr->ifOverlapArray;
-	if (ifOverlapArray[index] == 1) return true;
-	ifOverlapArray[index] = 1;
+	unsigned char *ifExistingEleArray = arr->ifExistingEleArray;
+	if (ifExistingEleArray[index] == 1) return true;
+	ifExistingEleArray[index] = 1;
 	return false;
 }
 
 void initializeDynamicArray(DynamicArray *arr) {
 	arr->type = -1;
 	arr->data = &dummy_data;
-	arr->ifOverlap = false;
+	arr->ifAllowOverlap
+ = false;
 	//arr-> overlapArray
 	arr->offset = -1;
 	arr->capacity = -1;
-	arr->modifiable = false;
+	arr->allowModify = false;
 }
 
-void swapWithLastElement(DynamicArray *arr, int pos, Type type) {
-	swapElement(arr, pos, getArrayOffset(arr), type);
+void swapWithLastElement(DynamicArray *arr, int index, Type type) {
+	swapElement(arr, index, getArrayOffset(arr), type);
 }
-
 
 void destroyDynamicArray(DynamicArray* arr) {
     for (int i = 0; i < getArraySize(arr); i++) free(arr->data[i]);
@@ -129,10 +139,10 @@ bool cmpStateId(Data *data, Data *expectedValue) {
 	return item->stateId == *compedValue;
 }
 
-bool cmpTransitionedSymbol(Data* data, Data* expectedValue) {
+bool cmpreadSymbol(Data* data, Data* expectedValue) {
 	Item *item = (Item *)data;
 	int *compedValue = (int*)expectedValue;
-	return item->transitionedSymbol == *compedValue;
+	return item->readSymbol == *compedValue;
 }
 
 int dummy_member(Data *data, Type type) {
@@ -148,6 +158,7 @@ Data *retriveData(DynamicArray *arr, int pos, Type type) {
 }
 
 void removeLastElement(DynamicArray *arr) {
+	if (arr->allowModify == false) error("not allowed to be modified: removeLastElement\n");
 	free(arr->data[getArrayOffset(arr)]);
 	arr->offset--;
 }
@@ -166,35 +177,45 @@ int getProdKey(Data *data, Type type) {
     return prod->key;
 }
 
-DynamicArray *fetchCommonElements(DynamicArray *arr, bool (customCmp)(Data*, Data*), Data *expected_data, Type type) {
+DynamicArray *fetchCommonElements(DynamicArray *arr, bool (customCmp)(Data*, Data*), Data *expected_data, bool ifRemoveElement, Type type) {
     DynamicArray *commonElementsArr = createDynamicArray(getArraySize(arr), true, &dummy_member, type);
     for (int i = 0; i < getArraySize(arr); i++) {
         Data *cmpedData = retriveData(arr, i, type);
-        if (customCmp(cmpedData, expected_data)) appendCopy(commonElementsArr, cmpedData, type);
+        if (customCmp(cmpedData, expected_data)) {
+			appendCopy(commonElementsArr, cmpedData, type);
+			if (ifRemoveElement) removeElement(arr, i, type);
+		}
     }
     return commonElementsArr;
 }
 
 //bool cmpHash_tranSymbol(Data *data1, Data *data2) {}
 
-//when hash and transitionedSymbol are the same
+//when hash and readSymbol are the same
 Item *fetchMatchingData(DynamicArray *itemArray, DynamicArray *expectedProdArray, int expectedSymbol) {
     if (getArraySize(itemArray) == 0) return dummy_item;
     
-    int expectedHashedKey = calculateArrayHash(expectedProdArray, getProdKey, PRODUCTION);
+    int expectedHashedKey = calculateProdsHash(expectedProdArray, getProdKey, PRODUCTION);
     
     //may replace here to extractCertainData()
     for (int i = 0; getArraySize(itemArray); i++) {
         Item *item = (Item *)retriveData(itemArray, i, ITEM);
-        if (expectedHashedKey == item->hashed_keys && expectedSymbol == item->transitionedSymbol) return item;
+        if (expectedHashedKey == item->hashed_keys && expectedSymbol == item->readSymbol) return item;
     }
     
     return dummy_item;
 }
 
-DynamicArray *cloneArray(DynamicArray *originalArr, bool ifModifiable, int (*referentMember)(Data*, Type)) {
+void copyPasteArray(DynamicArray *copiedArr, DynamicArray *pastedArr) {
+	if (copiedArr->type != pastedArr->type) error("type mismatch: copyPasteArray");
+	for (int i = 0; i < getArraySize(copiedArr); i++) {
+		appendCopy(pastedArr, retriveData(copiedArr, i, copiedArr->type), pastedArr->type);
+	}
+}
+
+DynamicArray *cloneArray(DynamicArray *originalArr, bool ifAllowModify, int (*referentMember)(Data*, Type)) {
 	Type type = originalArr->type;
-	DynamicArray *clonedArray = createDynamicArray(getArraySize(originalArr), ifModifiable, referentMember, type);
+	DynamicArray *clonedArray = createDynamicArray(getArraySize(originalArr), ifAllowModify, referentMember, type);
 
 	for (int i = 0; i < getArraySize(originalArr); i++) {
         Data *d = retriveData(originalArr, i, type);
@@ -204,14 +225,15 @@ DynamicArray *cloneArray(DynamicArray *originalArr, bool ifModifiable, int (*ref
 	return clonedArray;
 }
 
-void swapRemoveElement(DynamicArray *arr, int pos_deprioritized, Type type) {
+void removeElement(DynamicArray *arr, int index, Type type) {
+	if (arr->allowModify == false) error("not allowed to be modified: removeElement\n");
 	if (type != arr->type) error("Type mismatch: swapRemoveElement\n");
 	if (getArraySize(arr) < 2) return;
-	swapWithLastElement(arr, pos_deprioritized, type);
+	swapWithLastElement(arr, index, type);
 	removeLastElement(arr);
 }
 
-int calculateArrayHash(DynamicArray *array, int (referentMember)(Data*, Type), Type type) {
+int calculateProdsHash(DynamicArray *array, int (referentMember)(Data*, Type), Type type) {
 	int hash = 0;
 
 	for (int i = 0; i < getArraySize(array); i++) {
@@ -239,7 +261,7 @@ void eliminateOverlap(DynamicArray *arr, int (referentMember)(Data*, Type), int 
 	for (int i = 0; i < numElements; i++) {
 		Data *data = retriveData(arr, i, type);
 		if (ifExistingArray[referentMember(data, type) - start_point] == 1) {
-			swapRemoveElement(arr, i, type);
+			removeElement(arr, i, type);
 			continue;
 		}
 		ifExistingArray[referentMember(data, type) - start_point] = 1;

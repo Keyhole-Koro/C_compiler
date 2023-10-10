@@ -12,6 +12,20 @@ typeSizeReference dataSizes[] = {
     {PRODUCTION, sizeof(Production)},//make a code add keyvalue as function
     {ITEM, sizeof(Item)},
 };
+/*
+typedef struct {
+    Type tp;
+    Data *dt;
+} typeDummyReference;
+
+typeDummyReference dataDummies[] = {
+    {INT, (Data *)dummy_int},
+    {PRODUCTION, (Data *)dummy_production},//make a code add keyvalue as function
+    {ITEM, (Data *)dummy_item},
+};
+*/
+int dummy_int_instance = -1;
+int *dummy_int = &dummy_int_instance;
 
 Production dummy_prod_instance = {-1, -1, {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1}, -1, -1};
 Production *dummy_prod = &dummy_prod_instance;
@@ -26,33 +40,37 @@ size_t getDataSize(Type tp) {
     }
     return 0;
 }
-
-
+/*
+Data *getDummy(Type type) {
+	for (int i = 0; i < ARRAY_LENGTH(dataDummies); i++) {
+        if (dataDummies[i].tp == tp) return dataDummies[i].dt;
+    }
+    return 0;
+}
+*/
 void error(char ch[]) {
     fprintf(stderr, "%s", ch);
     exit(1);
 }
 
-void initializeItem(Item *item) {
-	item->stateId = -1;
-	item->transitionedSymbol = -1;
-	item->Productions = dummy_prod;
-	item->hashed_keys = -1;
+Item *initializeItem() {
+	Item *new_item = malloc(getDataSize(ITEM));
+	*new_item = *dummy_item;
+	return new_item;
 }
 
-void initializeProduction(Production *prod) {
-	prod->key = -1;
-	prod->left = -1;
-    memcpy(prod->right, dummy10int, sizeof(int)*10);
-	prod->readPosition = -1;
-	prod->cur_symbol = -1;
+Production *initializeProduction() {
+	Production *new_prod = malloc(getDataSize(PRODUCTION));
+	*new_prod = *dummy_prod;
+	return new_prod;
 }
 
-Item *setItem(int stateId, int transitionedSymbol, int hashed_keys) {
+Item *createItem(int stateId, int readSymbol, Production *prod, int hashed_keys, Item *item) {
     Item *new_item = (Item *)malloc(sizeof(Item));
     new_item->stateId = stateId;
-    new_item->transitionedSymbol = transitionedSymbol;
-    //new_item->Productions = (Production *)fetchedProdArray;
+    new_item->readSymbol = readSymbol;
+    new_item->Productions = prod;
     new_item->hashed_keys = hashed_keys;
+	new_item->transitItems = item;
     return new_item;
 }

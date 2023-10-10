@@ -18,35 +18,44 @@ typedef union {
 typedef struct {
     Type type;
     Data **data;
-	bool ifOverlap;//true allows overlapping //!be careful not to handle big numbers
-	unsigned char *ifOverlapArray;//its array contains 0 1 once value appears its contained the corresponding index by 1
+	bool ifAllowOverlap;//true allows overlapping //!be careful not to handle big numbers
+	unsigned char *ifExistingEleArray;//its array contains 0 1 once value appears its contained the corresponding index by 1
     int (*referentMember)(Data*, Type);
     int offset;
     int capacity;
-    bool modifiable;
+    bool allowModify;
 } DynamicArray;
 
 extern Data *dummy_data;
-
-DynamicArray *createDynamicArray(int initialCapacity, bool ifModifiable, int (*referentMember)(Data*, Type), Type type);
+//works
+DynamicArray *createDynamicArray(int initialCapacity, bool ifallowModify, int (*referentMember)(Data*, Type), Type type);
 void normalReallocateDynamicArray(DynamicArray *arr);
 void append(DynamicArray *arr, void *element, Type);
 void appendCopy(DynamicArray *arr, void *element, Type);
+void allowModify(DynamicArray *arr);
+void disableModify(DynamicArray *arr);
 
 int fetchPosition(DynamicArray* arr, bool (customCmp)(Data*, Data*), Data* expectedValue, Type type);
+//works
 Data *retriveData(DynamicArray* arr, int pos, Type type);
+
 void destroyDynamicArray(DynamicArray* arr);
 
+//works
 int dummy_member(Data *data, Type type);
 int getArrayOffset(DynamicArray* arr);
 int getArraySize(DynamicArray *arr);
 void removeLastElement(DynamicArray *arr);
 
-DynamicArray *fetchCommonElements(DynamicArray *arr, bool (customCmp)(Data*, Data*), Data *expected_data, Type type);
+DynamicArray *fetchCommonElements(DynamicArray *arr, bool (customCmp)(Data*, Data*), Data *expected_data, bool ifRemoveElement, Type type);
 
-DynamicArray *cloneArray(DynamicArray *originalArr, bool ifModifiable, int (*referentMember)(Data*, Type));
-void swapRemoveElement(DynamicArray *arr, int pos_deprioritized, Type type);
+void copyPasteArray(DynamicArray *copiedArr, DynamicArray *pastedArr);
+//works
+DynamicArray *cloneArray(DynamicArray *originalArr, bool ifallowModify, int (*referentMember)(Data*, Type));
 
+void removeElement(DynamicArray *arr, int index, Type type);
+
+//works
 void swapElement(DynamicArray* arr, int pos1, int pos2, Type type);
 void swapWithLastElement(DynamicArray *arr, int pos, Type type);
 
@@ -55,9 +64,9 @@ void eliminateOverlap(DynamicArray *arr, int (referentMember)(Data*, Type), int 
 int getProdKey(Data *data, Type type);
 Item *fetchMatchingData(DynamicArray *itemArray, DynamicArray *expectedProdArray, int expectedSymbol);
 
-bool cmpTransitionedSymbol(Data* data, Data* expectedValue);
+bool cmpreadSymbol(Data* data, Data* expectedValue);
 
-int calculateArrayHash(DynamicArray *array, int (referentElement)(Data*, Type), Type);
+int calculateProdsHash(DynamicArray *array, int (referentElement)(Data*, Type), Type);
 
 Production *getProdFromItem(Item *item, Type);
 
@@ -70,9 +79,10 @@ unsigned char *initializeOverlapArray(DynamicArray *existingElementArr, int (ref
 void appendAtIndexOverlapArray(DynamicArray *arr, int index);
 void destoryUnsignedCharArray(unsigned char *arr);
 
+//works
 bool cmpInt(Data* data1, Data* data2);
 int getIntFromData(Data * data, Type type);
-
+//works
 int qsortPartition(DynamicArray *arr, int (referentFunc)(Data *, Type), int low, int high, Type type);
 void quickSort(DynamicArray *arr, int (referentFunc)(Data *, Type), int low, int high, Type type);
 

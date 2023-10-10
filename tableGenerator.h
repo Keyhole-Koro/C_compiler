@@ -19,16 +19,13 @@ extern Item *dummy_item;
 void appendCopiedOriginalProd(DynamicArray *arr, int key, Type type);
 
 bool isNonTerminal(int symbol);
-int cur_symbolGetter(Data *prod, Type type);
-int leftGetter(Data *prod, Type type);
-int getCurSymbol(Data *data);
+int getLeftFromProd(Data *prod, Type type);
+int getCur_symbol(Data *data);
 bool cmpSymbol(Data *data, Data *expectedValue);
+bool cmpHash_keysOfProds(Data *data, Data *expectedValue);
 
-bool isSymbolOverlap(DynamicArray *symbolArr, int symbol, Type type);
 void removeElement(DynamicArray *arr, int i, Type type);
-void prioritizeSymbol(DynamicArray *fetchedSymbolArray, int symbol);
 
-void appendSymbol(DynamicArray *SymbolArray, int cur_symbol);
 
 void updateCur_Symbol(DynamicArray *prodArr, Type type);
 DynamicArray *insertProds();
@@ -36,6 +33,5 @@ DynamicArray *setUpOriginalProd();
 
 bool isEndProd(DynamicArray *prodArr);
 
-DynamicArray *setUpDupliSortUpdateProd(DynamicArray *oldProdArray, Type type);
 
 #endif

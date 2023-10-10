@@ -23,12 +23,13 @@ typedef struct Item Item;
 
 struct Item {
     int stateId;
-    int transitionedSymbol;
+    int readSymbol;
     Production *Productions;
     int hashed_keys;//of keys of productions
-    Item *transitionDestinations;
+    Item *transitItems;
 };
 
+extern int *dummy_int;
 extern Production *dummy_prod;
 extern Item *dummy_item;
 
@@ -38,15 +39,15 @@ typedef enum {
     ITEM,
 } Type;
 
-void initializeItem(Item *item);
-
-void initializeProduction(Production *prod);
+Item *initializeItem();
+Production *initializeProduction();
 
 size_t getDataSize(Type tp);
 
+//Data *getDummy(Type type);
+
 void error(char ch[]);
 
-
-Item *setItem(int stateId, int transitionedSymbol, int hashed_keys);
+Item *createItem(int stateId, int readSymbol, Production *prod, int hashed_keys, Item *item);
 
 #endif
