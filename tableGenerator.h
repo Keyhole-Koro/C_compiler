@@ -18,14 +18,7 @@ extern Item *dummy_item;
 
 void appendCopiedOriginalProd(DynamicArray *arr, int key, Type type);
 
-bool isNonTerminal(int symbol);
-int getLeftFromProd(Data *prod, Type type);
-int getCur_symbol(Data *data);
-bool cmpSymbol(Data *data, Data *expectedValue);
-bool cmpHash_keysOfProds(Data *data, Data *expectedValue);
-
-void removeElement(DynamicArray *arr, int i, Type type);
-
+int getCur_symbol(Data *data, Type type);
 
 void updateCur_Symbol(DynamicArray *prodArr, Type type);
 DynamicArray *insertProds();

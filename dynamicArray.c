@@ -66,7 +66,7 @@ void appendCopy(DynamicArray *arr, void *element, Type type) {
     if (ifExistInOverlap(arr, arr->referentMember((Data *)element, type))) return;
 
     Data *copy_data_ptr = (Data *)malloc(getDataSize(type));
-    *copy_data_ptr = *(Data *)element;
+    memcpy(copy_data_ptr, element, getDataSize(type));
     arr->data[++arr->offset] = copy_data_ptr;
 }
 
@@ -132,18 +132,6 @@ void destroyDynamicArray(DynamicArray* arr) {
 	free(arr->data);
 	free(arr);
 }
-//add safety
-bool cmpStateId(Data *data, Data *expectedValue) {
-	Item *item = (Item *)data;
-	int *compedValue = (int*)expectedValue;
-	return item->stateId == *compedValue;
-}
-
-bool cmpreadSymbol(Data* data, Data* expectedValue) {
-	Item *item = (Item *)data;
-	int *compedValue = (int*)expectedValue;
-	return item->readSymbol == *compedValue;
-}
 
 int dummy_member(Data *data, Type type) {
 	return -1;
@@ -177,11 +165,11 @@ int getProdKey(Data *data, Type type) {
     return prod->key;
 }
 
-DynamicArray *fetchCommonElements(DynamicArray *arr, bool (customCmp)(Data*, Data*), Data *expected_data, bool ifRemoveElement, Type type) {
+DynamicArray *fetchCommonElements(DynamicArray *arr, bool (customCmp)(Data*, Data*, Type), Data *expected_data, bool ifRemoveElement, Type type) {
     DynamicArray *commonElementsArr = createDynamicArray(getArraySize(arr), true, &dummy_member, type);
     for (int i = 0; i < getArraySize(arr); i++) {
         Data *cmpedData = retriveData(arr, i, type);
-        if (customCmp(cmpedData, expected_data)) {
+        if (customCmp(cmpedData, expected_data, type)) {
 			appendCopy(commonElementsArr, cmpedData, type);
 			if (ifRemoveElement) removeElement(arr, i, type);
 		}
@@ -195,7 +183,7 @@ DynamicArray *fetchCommonElements(DynamicArray *arr, bool (customCmp)(Data*, Dat
 Item *fetchMatchingData(DynamicArray *itemArray, DynamicArray *expectedProdArray, int expectedSymbol) {
     if (getArraySize(itemArray) == 0) return dummy_item;
     
-    int expectedHashedKey = calculateProdsHash(expectedProdArray, getProdKey, PRODUCTION);
+    int expectedHashedKey = calculateHash(expectedProdArray, getProdKey, PRODUCTION);
     
     //may replace here to extractCertainData()
     for (int i = 0; getArraySize(itemArray); i++) {
@@ -233,7 +221,7 @@ void removeElement(DynamicArray *arr, int index, Type type) {
 	removeLastElement(arr);
 }
 
-int calculateProdsHash(DynamicArray *array, int (referentMember)(Data*, Type), Type type) {
+int calculateHash(DynamicArray *array, int (referentMember)(Data*, Type), Type type) {
 	int hash = 0;
 
 	for (int i = 0; i < getArraySize(array); i++) {
@@ -338,7 +326,4 @@ bool cmpInt(Data* data1, Data* data2) {
     return *(int *)data1 == *(int *)data2;
 }
 
-int getIntFromData(Data *data, Type type) {
-    if (type != INT) error("type mismatch: getIntFromData\n");
-    return *(int *)data;
-}
+

@@ -64,22 +64,33 @@ DynamicArray *insertProdsFromPreDefined() {
 }
 
 DynamicArray *setUpPreDefinedProd() {
-	DynamicArray *originalProdArary = insertProdsFromPreDefined();
-	quickSort(originalProdArary, getCur_symbol, 0, getArrayOffset(originalProdArary), PRODUCTION);
-	return originalProdArary;
+	DynamicArray *originalProdArray = insertProdsFromPreDefined();
+	updateCur_Symbol(originalProdArray, PRODUCTION);
+	//quickSort(originalProdArary, getCur_symbol, 0, getArrayOffset(originalProdArary), PRODUCTION);
+	return originalProdArray;
 }
 
 void printProd(DynamicArray *arr, Type type) {
 	if (type != PRODUCTION) error("type mismatch: printProd\n");
-
+	printf("size of arr: %d\n", getArraySize(arr));
 	for (int i = 0; i < getArraySize(arr); i++) {
 		Production *prod = (Production *)retriveData(arr, i, PRODUCTION);
-		printf("prod key: %d %p\n", prod->key, &(prod->key));
+		printf("prod key left readPosition cur_symbol: %d %d %d %d\n", prod->key, prod->left, prod->readPosition, prod->cur_symbol);
 	}
 }
 
 bool isNonTerminal(int symbol) {
-	return symbol >= NON_TERMIANL_START;
+	return symbol >= NON_TERMINAL_START;
+}
+
+int getIntFromData(Data *data, Type type) {
+    if (type != INT) error("type mismatch: getIntFromData\n");
+    return *(int *)data;
+}
+
+int getKeyFromProd(Data *data, Type type) {
+	if (type != PRODUCTION) error("type mismatch: getKeyFromProd\n");
+	return ((Production*)data)->key;
 }
 
 int getLeftFromProd(Data *data, Type type) {
@@ -94,7 +105,7 @@ int getCur_symbol(Data *data, Type type) {
 }
 
 int getCur_symbolForOverlapHandler(Data *data, Type type) {
-	if (type != PRODUCTION) error("type mismatch: getCur_symbol\n");
+	if (type != PRODUCTION && type != INT) error("type mismatch: getCur_symbolForOverlapHandler\n");
 	Production *prod = (Production *)(data);
 	return prod->cur_symbol - NON_TERMINAL_START;
 }
@@ -113,7 +124,7 @@ bool cmpHash_keyOfProdsInItem(Data *data, Data *expectedData, Type type) {
 	return item->hashed_keys == cmpedItem->hashed_keys;
 }
 
-int getHash_keyOfProdsInItem(Data *data, Data *expectedData, Type type) {
+int getHash_keyOfProdsInItem(Data *data, Type type) {
 	if (type != ITEM) error("type mismatch: getHash_keyOfProdsInItem\n");
 	Item *item = (Item *)data;
 	return item->hashed_keys;
@@ -123,7 +134,22 @@ bool cmpLeftFromProd(Data *data, Data *expectedValue, Type type) {
 	if (type != PRODUCTION) error("type mismatch: cmpLefFromProd\n");
 	Production *symbol = (Production *)data;
 	Production *compedValue = (Production *)expectedValue;
+	printf("symbols: %d %d\n", symbol->left, compedValue->left);
 	return symbol->left == compedValue->left;
+}
+
+bool cmpStateId(Data *data, Data *expectedValue, Type type) {
+	if (type != ITEM) error("type mismatch: cmpStateId\n");
+	Item *item = (Item *)data;
+	int *compedValue = (int*)expectedValue;
+	return item->stateId == *compedValue;
+}
+
+bool cmpReadSymbol(Data* data, Data* expectedValue, Type type) {
+	if (type != ITEM) error("type mismatch: cmpReadSymbol\n");
+	Item *item = (Item *)data;
+	int *compedValue = (int*)expectedValue;
+	return item->readSymbol == *compedValue;
 }
 
 void updateCur_Symbol(DynamicArray *prodArr, Type type) {
@@ -158,63 +184,87 @@ bool isEndProd(DynamicArray *prodArr) {
 	return false;
 }
 
-DynamicArray *collectCertainCur_symbol(DynamicArray *prodArray){
-	DynamicArray *collectedCur_symbol = createDynamicArray(ARRAY_LENGTH(productions), true, getCur_SymbolForOverlapHandler, INT);
+void collectCur_symbol(DynamicArray *prodArray, DynamicArray *collectedCur_symbolArray){
 	for (int i = 0; i < getArraySize(prodArray); i++) {
 		Production *prod = (Production *)retriveData(prodArray, i, PRODUCTION);
-		appendCopy(collectedCur_symbol, prod->cur_symbol, INT);
+		appendCopy(collectedCur_symbolArray, &(prod->cur_symbol), INT);
 	}
-	return collectedCur_symbol;
+	printf("---------------\n");
+	for (int i = 0; i < getArraySize(collectedCur_symbolArray); i++) {
+		int a = *(int *)retriveData(collectedCur_symbolArray, i, INT);
+		printf("a: %d\n", a);
+	}
+	printf("---------------\n");
+	
 }
 
-DynamicArray *gatherProdbyCertainCur_symbol(DynamicArray *prodArray) {
-	DynamicArray *collectedCur_symbolArray = gatherCertainCur_symbol(prodArray);
-	DynamicArray *collectedProdArray = createDynamicArray(ARRAY_LENGTH(productions), true, getLeftFromProd, PRODUCTION);
-
-	DynamicArray *preDefinedProds = setUpPreDefinedProd();
+void gatherProdbyCertainCur_symbol(DynamicArray *collectedProdArray, DynamicArray *preDefinedProds, int expected_symbol) {
 
 	Production *expected_data = initializeProduction();
+	
+	expected_data->left = expected_symbol;
 
-	for (int i = 0; i < getArraySize(collectedCur_symbolArray; i++)) {
-		expected_data->left = *(int *)retriveData(collectedCur_symbolArray, i, INT);
+	DynamicArray *fetchedProdbySingleSymbolArray = fetchCommonElements(preDefinedProds, cmpLeftFromProd, (Data *)expected_data, true, PRODUCTION);
 
-		DynamicArray *fetchedProdbySingleSymbolArray = fetchCommonElements(preDefinedProds, cmpLeftFromProd, expected_data, true, PRODUCTION);
-
-		copyPasteArray(collectedProdArray, fetchedProdbySingleSymbolArray);
-		destroyDynamicArray(fetchedProdArray);
-	}
+	copyPasteArray(fetchedProdbySingleSymbolArray, collectedProdArray);
+	
+	destroyDynamicArray(fetchedProdbySingleSymbolArray);
 	free(expected_data);
+}
+
+DynamicArray *start_gatheringProds(DynamicArray *collectedProdArray) {
+	DynamicArray *preDefinedProds = setUpPreDefinedProd();
+	
+	DynamicArray *collectedCur_symbolArray = createDynamicArray(ARRAY_LENGTH(productions), true, getIntFromData, INT);
+	
+	collectCur_symbol(collectedProdArray, collectedCur_symbolArray);
+	
+	int num_cur_symbol = getArraySize(collectedCur_symbolArray);
+	for (int i = 0; i < num_cur_symbol; i++) {
+		
+		gatherProdbyCertainCur_symbol(collectedProdArray, preDefinedProds, *(int *)retriveData(collectedCur_symbolArray, i, INT));
+		
+		collectCur_symbol(collectedProdArray, collectedCur_symbolArray);
+		
+		num_cur_symbol = getArraySize(collectedCur_symbolArray);
+	}
 	return collectedProdArray;
 }
 
-Item *findItembyProds(DynamicArray *itemArray, DynamicArray *prodArray) {
-	if (getArraySize(itemArray) <= 1) return dymmy_item;
-	int expected_hash_key_value = calculateHash(prodArray, getHash_keyOfProdsInItem, PRODUCTION);
-	DynamicArray *fetchedItemArray = fetchCommonElements(itemArray, cmpHash_keyOfProdsInItem, ITEM);
+Item *findItembyProds(DynamicArray *itemArray, DynamicArray *prodArray, int expected_symbol) {
+	if (getArraySize(itemArray) <= 1) return dummy_item;
+	
+	Item *expected_item = initializeItem();
+	expected_item->readSymbol = expected_symbol;
+	expected_item->hashed_keys = calculateHash(prodArray, getHash_keyOfProdsInItem, PRODUCTION);
+
+	DynamicArray *fetchedItemArray = fetchCommonElements(itemArray, cmpHash_keyOfProdsInItem, (Data *)expected_item, false, ITEM);
 	//this is supposed to one item
-	DynamicArray *filteredItemArray = fetchCommonElements(fetchedItemArray, cmpReadSymbol, ITEM);
+	DynamicArray *filteredItemArray = fetchCommonElements(fetchedItemArray, cmpReadSymbol, (Data *)expected_item, true, ITEM);
 	if (getArraySize(filteredItemArray) != 1) printf("warn: the number of elements: findItembyProds");
-	if (getArraySize(filteredItemArray) == 1) return filteredItemArray->data[0];
+	if (getArraySize(filteredItemArray) == 1) return (Item *)retriveData(filteredItemArray, 0, ITEM);
 
 	return dummy_item;
 }
 
 Item *setItem(DynamicArray *itemArray, DynamicArray *fetchedProdArray, int expected_symbol) {
 	disableModify(fetchedProdArray);
+	updateCur_Symbol(fetchedProdArray, PRODUCTION);
 
-	DynamicArray *collectedProdArray = gatherProdbyCertainCur_symbol(fetchedProdArray);
+	DynamicArray *collectedProdArray = start_gatheringProds(fetchedProdArray);
 	
 	printProd(collectedProdArray, PRODUCTION);
-	Item *item = findItembyProds(itemArray, collectedProdArray);
+	
+	Item *item = findItembyProds(itemArray, collectedProdArray, expected_symbol);
 
 	return item;
 }
 
 int main() {
-	DynamicArray *itemArray = createDynamicArray(20, false, ITEM);
-	DynamicArray *initialProdArray = createDynamicArray(10, true, PRODUCTION);
-	append(initialProdArray, &productions[0], PRODUCTION);
-	Item *first_item = (itemArray, initialProdArray, FIRST);//FIRST temporary
+	DynamicArray *itemArray = createDynamicArray(20, false, dummy_member, ITEM);
+	DynamicArray *initialProdArray = createDynamicArray(10, true, getKeyFromProd, PRODUCTION);
+	appendCopy(initialProdArray, &productions[0], PRODUCTION);
+	Item *first_item = setItem(itemArray, initialProdArray, FIRST);//FIRST temporary
 }
 
 

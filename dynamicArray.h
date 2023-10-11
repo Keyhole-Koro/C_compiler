@@ -47,7 +47,7 @@ int getArrayOffset(DynamicArray* arr);
 int getArraySize(DynamicArray *arr);
 void removeLastElement(DynamicArray *arr);
 
-DynamicArray *fetchCommonElements(DynamicArray *arr, bool (customCmp)(Data*, Data*), Data *expected_data, bool ifRemoveElement, Type type);
+DynamicArray *fetchCommonElements(DynamicArray *arr, bool (customCmp)(Data*, Data*, Type), Data *expected_data, bool ifRemoveElement, Type type);
 
 void copyPasteArray(DynamicArray *copiedArr, DynamicArray *pastedArr);
 //works
@@ -64,9 +64,7 @@ void eliminateOverlap(DynamicArray *arr, int (referentMember)(Data*, Type), int 
 int getProdKey(Data *data, Type type);
 Item *fetchMatchingData(DynamicArray *itemArray, DynamicArray *expectedProdArray, int expectedSymbol);
 
-bool cmpreadSymbol(Data* data, Data* expectedValue);
-
-int calculateProdsHash(DynamicArray *array, int (referentElement)(Data*, Type), Type);
+int calculateHash(DynamicArray *array, int (referentElement)(Data*, Type), Type);
 
 Production *getProdFromItem(Item *item, Type);
 
@@ -81,7 +79,6 @@ void destoryUnsignedCharArray(unsigned char *arr);
 
 //works
 bool cmpInt(Data* data1, Data* data2);
-int getIntFromData(Data * data, Type type);
 //works
 int qsortPartition(DynamicArray *arr, int (referentFunc)(Data *, Type), int low, int high, Type type);
 void quickSort(DynamicArray *arr, int (referentFunc)(Data *, Type), int low, int high, Type type);
