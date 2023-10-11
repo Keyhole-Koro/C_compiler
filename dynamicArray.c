@@ -167,11 +167,18 @@ int getProdKey(Data *data, Type type) {
 
 DynamicArray *fetchCommonElements(DynamicArray *arr, bool (customCmp)(Data*, Data*, Type), Data *expected_data, bool ifRemoveElement, Type type) {
     DynamicArray *commonElementsArr = createDynamicArray(getArraySize(arr), true, &dummy_member, type);
-    for (int i = 0; i < getArraySize(arr); i++) {
+	printf("fetching\n");
+	int condition = getArraySize(arr);
+    for (int i = 0; i < condition; i++) {
+		printf("condition: %d\n", condition);
         Data *cmpedData = retriveData(arr, i, type);
         if (customCmp(cmpedData, expected_data, type)) {
 			appendCopy(commonElementsArr, cmpedData, type);
-			if (ifRemoveElement) removeElement(arr, i, type);
+			if (ifRemoveElement) {
+				removeElement(arr, i, type);
+				i--;
+				condition--;
+			}
 		}
     }
     return commonElementsArr;
@@ -212,7 +219,7 @@ DynamicArray *cloneArray(DynamicArray *originalArr, bool ifAllowModify, int (*re
 
 	return clonedArray;
 }
-
+//please care about i in for() when you use this
 void removeElement(DynamicArray *arr, int index, Type type) {
 	if (arr->allowModify == false) error("not allowed to be modified: removeElement\n");
 	if (type != arr->type) error("Type mismatch: swapRemoveElement\n");
