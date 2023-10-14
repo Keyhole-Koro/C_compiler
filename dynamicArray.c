@@ -167,10 +167,8 @@ int getProdKey(Data *data, Type type) {
 
 DynamicArray *fetchCommonElements(DynamicArray *arr, bool (customCmp)(Data*, Data*, Type), Data *expected_data, bool ifRemoveElement, Type type) {
     DynamicArray *commonElementsArr = createDynamicArray(getArraySize(arr), true, &dummy_member, type);
-	printf("fetching\n");
 	int condition = getArraySize(arr);
     for (int i = 0; i < condition; i++) {
-		printf("condition: %d\n", condition);
         Data *cmpedData = retriveData(arr, i, type);
         if (customCmp(cmpedData, expected_data, type)) {
 			appendCopy(commonElementsArr, cmpedData, type);
