@@ -79,7 +79,7 @@ void printProd(DynamicArray *arr, Type type) {
 }
 
 bool isNonTerminal(int symbol) {
-	return symbol >= NON_TERMINAL_START;
+	return symbol > NON_TERMINAL_START;
 }
 
 int getIntFromData(Data *data, Type type) {
@@ -189,18 +189,18 @@ bool isEndProd(DynamicArray *prodArr) {
 
 DynamicArray *collectCur_symbol(DynamicArray *prodArray, bool ifNonTerminalOnly){
     if (prodArray->type != PRODUCTION) printf("type mismatch: collectCur_symbol\n");
-    DynamicArray *collectedCur_symbolArray = createDynamicArray(ARRAY_LENGTH(productions)/2, true, getIntFromDataForSymbol, INT);
+    DynamicArray *collectedCur_symbolArray = createDynamicArray(ARRAY_LENGTH(productions), true, getIntFromDataForSymbol, INT);
     
 	for (int i = 0; i < getArraySize(prodArray); i++) {
-        printf("type: %d\n", prodArray->type);
-		Production *prod = (Production *)retriveData(prodArray, i, PRODUCTION);
-        printf("key: %d\n", prod->key);
+
+        Production *prod = (Production *)retriveData(prodArray, i, PRODUCTION);
+        
         if (ifNonTerminalOnly && !isNonTerminal(prod->cur_symbol)) continue;
+        
         appendCopy(collectedCur_symbolArray, &(prod->cur_symbol), INT);
 	}
-    printf("size of collectedf: %d\n", getArraySize(collectedCur_symbolArray));
+    printf("size of collected: %d\n", getArraySize(collectedCur_symbolArray));
     return collectedCur_symbolArray;
-
 }
 
 void gatherProdbyCertainCur_symbol(DynamicArray *collectedProdArray, DynamicArray *collectedCur_symbolArray, DynamicArray *preDefinedProds, int expected_symbol) {
@@ -209,15 +209,19 @@ void gatherProdbyCertainCur_symbol(DynamicArray *collectedProdArray, DynamicArra
 	
 	expected_data->left = expected_symbol;
 
-	DynamicArray *fetchedProdbySingleSymbolArray = fetchCommonElements(preDefinedProds, cmpLeftFromProd, (Data *)expected_data, true, PRODUCTION);
+	DynamicArray *newly_fetchedProdbySingleSymbolArray = fetchCommonElements(preDefinedProds, cmpLeftFromProd, (Data *)expected_data, true, PRODUCTION);
     
-    DynamicArray *newly_collectedCur_symboArray = collectCur_symbol(fetchedProdbySingleSymbolArray, true);
+    DynamicArray *newly_collectedCur_symboArray = collectCur_symbol(newly_fetchedProdbySingleSymbolArray, true);
 
-	copyPasteArray(fetchedProdbySingleSymbolArray, collectedProdArray);
+	copyPasteArray(newly_fetchedProdbySingleSymbolArray, collectedProdArray);
     copyPasteArray(newly_collectedCur_symboArray, collectedCur_symbolArray);
+    
+    printf("a---------------\n");
+    printProd(collectedProdArray, PRODUCTION);
+    printf("a---------------\n");
 
     destroyDynamicArray(newly_collectedCur_symboArray);
-	destroyDynamicArray(fetchedProdbySingleSymbolArray);
+    destroyDynamicArray(newly_fetchedProdbySingleSymbolArray);
 	free(expected_data);
 }
 
@@ -230,7 +234,7 @@ DynamicArray *start_gatheringProds(DynamicArray *collectedProdArray) {
 	for (int i = 0; i < num_cur_symbol; i++) {
 		
 		gatherProdbyCertainCur_symbol(collectedProdArray, collectedCur_symbolArray, preDefinedProds, *(int *)retriveData(collectedCur_symbolArray, i, INT));
-		
+        
 		num_cur_symbol = getArraySize(collectedCur_symbolArray);
 	}
 	return collectedProdArray;
@@ -262,7 +266,6 @@ void separateProds(DynamicArray *itemArray, DynamicArray *collectedProdArray){
         expected_data->cur_symbol = expected_symbol;
         
         DynamicArray *fetchedProdbySingleSymbolArray = fetchCommonElements(collectedProdArray, cmpCur_symbol, (Data *)expected_data, true, PRODUCTION);
-
         startSettingItem(itemArray, fetchedProdbySingleSymbolArray, expected_symbol);
     }
 }
