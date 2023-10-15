@@ -54,6 +54,7 @@ void append(DynamicArray *arr, void *element, Type type) {
     if (ifExistInOverlap(arr, arr->referentMember((Data *)element, type))) return;
     
     Data *copied_ptr = (Data *)malloc(sizeof(element));
+    if (copied_ptr == NULL) error("Memory allocation failed\n");
     copied_ptr = (Data *)element;
     arr->data[++arr->offset] = copied_ptr;
 }
@@ -64,8 +65,10 @@ void appendCopy(DynamicArray *arr, void *element, Type type) {
     normalReallocateDynamicArray(arr);
 
     if (ifExistInOverlap(arr, arr->referentMember((Data *)element, type))) return;
-
+    
     Data *copy_data_ptr = (Data *)malloc(getDataSize(type));
+    if (copy_data_ptr == NULL) error("Memory allocation failed\n");
+    
     memcpy(copy_data_ptr, element, getDataSize(type));
     arr->data[++arr->offset] = copy_data_ptr;
 }
@@ -203,7 +206,8 @@ void copyPasteArray(DynamicArray *copiedArr, DynamicArray *pastedArr) {
 	if (copiedArr->type != pastedArr->type) error("type mismatch: copyPasteArray");
 	for (int i = 0; i < getArraySize(copiedArr); i++) {
 		appendCopy(pastedArr, retriveData(copiedArr, i, copiedArr->type), pastedArr->type);
-	}
+        if (pastedArr->type == PRODUCTION) printf("after modifing: %d\n", ((Production*)retriveData(pastedArr, 0, PRODUCTION))->key);
+    }
 }
 
 DynamicArray *cloneArray(DynamicArray *originalArr, bool ifAllowModify, int (*referentMember)(Data*, Type)) {
