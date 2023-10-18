@@ -1,12 +1,5 @@
 #include "dynamicArray.h"
 
-/*
- deprioritize()
- fetchedProdArray:
- duplicatedProdsArray: 0 1 2 3 4 5
- originalProd: 0 1 2 3 4 5
-*/
-
 Data dummy_data_instance = {.intData = NULL };
 Data *dummy_data = &dummy_data_instance;
 
@@ -40,9 +33,9 @@ void disableModify(DynamicArray *arr) {
 }
 
 void normalReallocateDynamicArray(DynamicArray *arr) {
-	if (arr->offset == arr->capacity) {
+	if (getArraySize(arr) == arr->capacity) {
 		arr->capacity *= 2;
-		arr->data = realloc(arr->data, arr->capacity * SIZE_OF_A_MEMORY);
+		arr->data = realloc(arr->data, arr->capacity * sizeof(Data *));
 		if (arr->data == NULL) error("Memory allocation failed\n");
 	}
 }
@@ -68,8 +61,7 @@ void appendCopy(DynamicArray *arr, void *element, Type type) {
     
     Data *copy_data_ptr = (Data *)malloc(getDataSize(type));
     if (copy_data_ptr == NULL) error("Memory allocation failed\n");
-    
-    memcpy(copy_data_ptr, element, getDataSize(type));
+	memcpy(copy_data_ptr, element, getDataSize(type));
     arr->data[++arr->offset] = copy_data_ptr;
 }
 
@@ -206,7 +198,6 @@ void copyPasteArray(DynamicArray *copiedArr, DynamicArray *pastedArr) {
 	if (copiedArr->type != pastedArr->type) error("type mismatch: copyPasteArray");
 	for (int i = 0; i < getArraySize(copiedArr); i++) {
 		appendCopy(pastedArr, retriveData(copiedArr, i, copiedArr->type), pastedArr->type);
-        if (pastedArr->type == PRODUCTION) printf("after modifing: %d\n", ((Production*)retriveData(pastedArr, 0, PRODUCTION))->key);
     }
 }
 
