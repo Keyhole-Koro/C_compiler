@@ -68,7 +68,7 @@ void appendCopy(DynamicArray *arr, void *element, Type type) {
 bool ifExistInOverlap(DynamicArray *arr, int index) {
     if (arr->ifAllowOverlap
 ) return false;
-    if (index > 100) printf("warn: eventual_index == %d\n", index);
+    if (index > 100) printf("warn: eventual_index is %d\n", index);
     if (arr->ifExistingEleArray[index] == 1) return true;
     appendAtIndexOverlapArray(arr, index);
     return false;
@@ -163,8 +163,13 @@ int getProdKey(Data *data, Type type) {
 DynamicArray *fetchCommonElements(DynamicArray *arr, bool (customCmp)(Data*, Data*, Type), Data *expected_data, bool ifRemoveElement, Type type) {
     DynamicArray *commonElementsArr = createDynamicArray(getArraySize(arr), true, &dummy_member, type);
 	int condition = getArraySize(arr);
+    
     for (int i = 0; i < condition; i++) {
+        printf("i condition: %d %d\n", i, condition);
         Data *cmpedData = retriveData(arr, i, type);
+        
+        if (type == PRODUCTION) printf("j: %p\n", (Production *)cmpedData);
+        
         if (customCmp(cmpedData, expected_data, type)) {
 			appendCopy(commonElementsArr, cmpedData, type);
 			if (ifRemoveElement) {
