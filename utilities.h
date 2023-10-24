@@ -26,7 +26,7 @@ struct Item {
     int readSymbol;
     Production *Productions;
     int hashed_keys;//of keys of productions
-    Item *transitItems;
+    int hashedStateIds_ItemTransit;
 };
 
 extern int *dummy_int;
@@ -48,6 +48,8 @@ size_t getDataSize(Type tp);
 
 void error(char ch[]);
 
-Item *createItem(int stateId, int readSymbol, Production *prod, int hashed_keys, Item *item);
+Item *createItem(int stateId, int readSymbol, Production *prod, int hashed_keys, int hashedStateIds_ItemTransit);
+
+void updateHashedStateId(int *updatedId, int stateId);
 
 #endif

@@ -29,6 +29,9 @@ typedef struct {
 extern Data *dummy_data;
 //works
 DynamicArray *createDynamicArray(int initialCapacity, bool ifallowModify, int (*referentMember)(Data*, Type), Type type);
+
+void initializeElementsInDynamicArray(DynamicArray *arr, int start_index);
+
 void normalReallocateDynamicArray(DynamicArray *arr);
 void append(DynamicArray *arr, void *element, Type);
 void appendCopy(DynamicArray *arr, void *element, Type);

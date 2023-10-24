@@ -30,7 +30,7 @@ int *dummy_int = &dummy_int_instance;
 Production dummy_prod_instance = {-1, -1, {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1}, -1, -1};
 Production *dummy_prod = &dummy_prod_instance;
 
-Item dummy_item_instance = {-1, -1, NULL, -1, NULL};
+Item dummy_item_instance = {-1, -1, NULL, -1, -1};
 Item *dummy_item = &dummy_item_instance;
 
 
@@ -65,12 +65,21 @@ Production *initializeProduction() {
 	return new_prod;
 }
 
-Item *createItem(int stateId, int readSymbol, Production *prod, int hashed_keys, Item *item) {
+Item *createItem(int stateId, int readSymbol, Production *prod, int hashed_keys, int hashedStateIds_ItemTransit) {
     Item *new_item = (Item *)malloc(sizeof(Item));
     new_item->stateId = stateId;
     new_item->readSymbol = readSymbol;
     new_item->Productions = prod;
     new_item->hashed_keys = hashed_keys;
-	new_item->transitItems = item;
+	new_item->hashedStateIds_ItemTransit = hashedStateIds_ItemTransit;
     return new_item;
 }
+
+void updateHashedStateId(int *updatedId, int stateId) {
+	if (*updatedId || stateId == -1) return;
+	*updatedId ^= stateId;
+}
+
+//update hashkey
+//get hashkey
+//xor_countdown

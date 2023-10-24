@@ -24,9 +24,9 @@ void updateCur_Symbol(DynamicArray *prodArr, Type type);
 DynamicArray *insertProds();
 DynamicArray *setUpOriginalProd();
 
-void startSettingItem(DynamicArray *itemArray, DynamicArray *fetchedProdArray, int expected_symbol);
+void constructItem(DynamicArray *itemArray, DynamicArray *fetchedProdArray, int *hashedStateIdOfItem_transit, int expected_symbol);
 
-bool isEndProd(DynamicArray *prodArr);
+bool isClosure(DynamicArray *prodArr);
 
 
 #endif

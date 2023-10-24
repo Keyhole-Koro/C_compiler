@@ -8,6 +8,7 @@ DynamicArray *createDynamicArray(int initialCapacity, bool ifAllowModify, int (*
 	if (arr == NULL) error("Memory allocation failed\n");
 	arr->data = (Data **)malloc(sizeof(Data *)*initialCapacity);
 	if (arr->data == NULL) error("Memory allocation failed\n");
+	
 	arr->type = type;
 	arr->offset = -1;
 	arr->capacity = initialCapacity;
@@ -17,11 +18,20 @@ DynamicArray *createDynamicArray(int initialCapacity, bool ifAllowModify, int (*
         arr->ifAllowOverlap = false;
 		arr->ifExistingEleArray = createEmptyUnsignedCharArray(initialCapacity);
     } else {
-        arr->ifAllowOverlap
- = true;
+        arr->ifAllowOverlap = true;
     }
     arr->referentMember = referentMember;
+	
+	initializeElementsInDynamicArray(arr, 0);
+	
 	return arr;
+}
+
+void initializeElementsInDynamicArray(DynamicArray *arr, int start_index) {
+    for (int i = start_index; i < getArraySize(arr); i++) {
+		printf("i: %d\n", i);
+        arr->data[getArraySize(arr) + i] = NULL;
+    }
 }
 
 void allowModify(DynamicArray *arr) {
@@ -34,8 +44,10 @@ void disableModify(DynamicArray *arr) {
 
 void normalReallocateDynamicArray(DynamicArray *arr) {
 	if (getArraySize(arr) == arr->capacity) {
+		int previous_capacity_size = arr->capacity;
 		arr->capacity *= 2;
 		arr->data = realloc(arr->data, arr->capacity * sizeof(Data *));
+		initializeElementsInDynamicArray(arr, previous_capacity_size+1);
 		if (arr->data == NULL) error("Memory allocation failed\n");
 	}
 }
