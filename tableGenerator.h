@@ -13,20 +13,32 @@
 #include "dynamicArray.h"
 #include "utilities.h"
 
+extern Expr *dummy_expr;
 extern Production *dummy_prod;
 extern Item *dummy_item;
 
-void appendCopiedOriginalProd(DynamicArray *arr, int key, Type type);
+typedef int state_id;
 
-int getCur_symbol(Data *data, Type type);
+int getLeftFromProd(Data *data, Type type);
 
-void updateCur_Symbol(DynamicArray *prodArr, Type type);
-DynamicArray *insertProds();
-DynamicArray *setUpOriginalProd();
 
-void constructItem(DynamicArray *itemArray, DynamicArray *fetchedProdArray, int *hashedStateIdOfItem_transit, int expected_symbol);
+Expr *getExprWithKey(int key);
+DynamicArray *presetProductions();
 
-bool isClosure(DynamicArray *prodArr);
+void readOneSymbol(DynamicArray *prodArr);
 
+DynamicArray *Clone_readOne_Cur_symbol(DynamicArray *oldProdArray, Type type);
+
+bool isClosureItem(DynamicArray *prodArr);
+
+DynamicArray *extract_appnedCur_symbol(DynamicArray *prodArray, DynamicArray *appendedArray, bool ifAllowNonTerminal);
+
+DynamicArray *extract_listCur_symbol(DynamicArray *prodArray, bool ifAllowNonTerminal);
+
+Item *findExistingItem(DynamicArray *itemArray, DynamicArray *prodArray, int expected_readSymbol);
+state_id separateProds(DynamicArray *itemArray, DynamicArray *prodArray);
+DynamicArray *gatherProdswithSymbols(DynamicArray *prodArray);
+
+state_id constructItem(DynamicArray *itemArray, DynamicArray *prodArray, int expected_symbol);
 
 #endif

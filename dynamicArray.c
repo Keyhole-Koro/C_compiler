@@ -176,11 +176,8 @@ DynamicArray *fetchCommonElements(DynamicArray *arr, bool (customCmp)(Data*, Dat
 	int condition = getArraySize(arr);
     
     for (int i = 0; i < condition; i++) {
-        printf("i condition: %d %d\n", i, condition);
         Data *cmpedData = retriveData(arr, i, type);
-        
-        if (type == PRODUCTION) printf("j: %p\n", (Production *)cmpedData);
-        
+                
         if (customCmp(cmpedData, expected_data, type)) {
 			appendCopy(commonElementsArr, cmpedData, type);
 			if (ifRemoveElement) {

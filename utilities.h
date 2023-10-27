@@ -8,13 +8,19 @@
 #include <stdlib.h>
 #include <string.h>
 
+typedef struct Expr Expr;
+
+struct Expr {
+    int key;
+    int left;
+    int right[10];
+};
 
 typedef struct Production Production;
 
 struct Production {
     int key;
-    int left;
-    int right[10]; // modify later
+    Expr *expr;
     int readPosition;
     int cur_symbol;
 };
@@ -26,7 +32,6 @@ struct Item {
     int readSymbol;
     Production *Productions;
     int hashed_keys;//of keys of productions
-    int hashedStateIds_ItemTransit;
 };
 
 extern int *dummy_int;
@@ -39,6 +44,7 @@ typedef enum {
     ITEM,
 } Type;
 
+Expr *initializeExpr();
 Item *initializeItem();
 Production *initializeProduction();
 
