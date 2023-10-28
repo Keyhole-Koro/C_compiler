@@ -30,7 +30,8 @@ typedef struct Item Item;
 struct Item {
     int stateId;
     int readSymbol;
-    Production *Productions;
+    int arraySize;
+    Production **Productions;
     int hashed_keys;//of keys of productions
 };
 
@@ -42,9 +43,10 @@ typedef enum {
     INT = 128,
     PRODUCTION,
     ITEM,
+    EXPR,
 } Type;
 
-Expr *initializeExpr();
+Item *initializeExpr();
 Item *initializeItem();
 Production *initializeProduction();
 
@@ -54,8 +56,8 @@ size_t getDataSize(Type tp);
 
 void error(char ch[]);
 
-Item *createItem(int stateId, int readSymbol, Production *prod, int hashed_keys, int hashedStateIds_ItemTransit);
-
 void updateHashedStateId(int *updatedId, int stateId);
+
+Item *createItem(int stateId, int readSymbol, int arraySize, Production **prod, int hashed_keys);
 
 #endif

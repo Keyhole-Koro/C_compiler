@@ -28,13 +28,13 @@ typeDummyReference dataDummies[] = {
 int dummy_int_instance = -1;
 int *dummy_int = &dummy_int_instance;
 
-Expr dummy_expr_instance = {-1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+Expr dummy_expr_instance = {-1, -1, {-1, 1, 1, 1, 1, 1, 1, 1, 1, 1}};
 Expr *dummy_expr = &dummy_expr_instance;
 
-Production dummy_prod_instance = {-1, dummy_expr, -1, -1};
+Production dummy_prod_instance = {-1, &dummy_expr_instance, -1, -1};
 Production *dummy_prod = &dummy_prod_instance;
 
-Item dummy_item_instance = {-1, -1, NULL, -1, -1};
+Item dummy_item_instance = {-1, -1, -1, &dummy_prod, -1};
 Item *dummy_item = &dummy_item_instance;
 
 
@@ -75,10 +75,11 @@ Production *initializeProduction() {
 	return new_prod;
 }
 
-Item *createItem(int stateId, int readSymbol, Production *prod, int hashed_keys) {
+Item *createItem(int stateId, int readSymbol, int arraySize, Production **prod, int hashed_keys) {
     Item *new_item = (Item *)malloc(sizeof(Item));
     new_item->stateId = stateId;
     new_item->readSymbol = readSymbol;
+    new_item->arraySize = arraySize;
     new_item->Productions = prod;
     new_item->hashed_keys = hashed_keys;
     return new_item;
