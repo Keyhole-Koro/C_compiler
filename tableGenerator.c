@@ -275,7 +275,7 @@ state_id separateProds(DynamicArray *itemArray, DynamicArray *prodArray){
         //printProd(fetchedProdbySingleSymbolArray);
         readOneSymbol(fetchedProdbySingleSymbolArray);
         
-        if (isClosureItem(fetchedProdbySingleSymbolArray)) continue;
+        //if (isClosureItem(fetchedProdbySingleSymbolArray)) continue;
 
         hashed_stateId ^= constructItem(itemArray, fetchedProdbySingleSymbolArray, expected_symbol);
     }
@@ -294,7 +294,6 @@ DynamicArray *gatherProdswithSymbols(DynamicArray *prodArray) {
 
     for (int i = 0; i < condition; i++) {
         expected_prod->expr->left = *(int *)retriveData(listedCur_symbolArray, i, INT);
-        printf("expected: %d\n", *(int *)retriveData(listedCur_symbolArray, i, INT));
 
         DynamicArray *newly_fetchedProdbySingleSymbolArray = fetchCommonElements(presetProdArray, cmpLeftFromProd, (Data *)expected_prod, true, PRODUCTION);
 

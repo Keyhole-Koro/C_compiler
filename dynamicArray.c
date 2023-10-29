@@ -95,11 +95,10 @@ void reallocOverlapArray(DynamicArray *arr, int index) {
 }
 bool ifExistInOverlap(DynamicArray *arr, int index) {
     if (arr->ifAllowOverlap) return false;
-    if (index > 100) printf("warn: eventual_index is %d\n", index);
+    if (index > 100) printf("warn: index exceeds 100: index == %d\n", index);
 
     reallocOverlapArray(arr, index);
-    
-    if(arr->type == PRODUCTION) printf("index: %d %d\n", index, arr->ifExistingEleArray[index]);
+
     if (arr->ifExistingEleArray[index] == 1) return true;
     appendtoIndexOverlapArray(arr, index);
     return false;
