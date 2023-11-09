@@ -74,7 +74,7 @@ Production *getProdFromItem(Item *item, Type);
 
 bool ifExistInOverlap(DynamicArray *arr, int index);
 unsigned char *createEmptyUnsignedCharArray(int size);
-void initializeUnsignedCharArraytoZero(unsigned char *intArray);
+void initializeUnsignedCharArraytoZero(unsigned char *unsignedCharArray, int size);
 unsigned char *initializeOverlapArray(DynamicArray *existingElementArr, int (referentMember)(Data*, Type), Type type);
 void appendtoIndexOverlapArray(DynamicArray *arr, int index);
 void destoryUnsignedCharArray(unsigned char *arr);

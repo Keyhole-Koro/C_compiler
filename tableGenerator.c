@@ -228,9 +228,7 @@ DynamicArray *extract_appendCur_symbol(DynamicArray *prodArray, DynamicArray *ap
 
     for (int i = 0; i < getArraySize(prodArray); i++) {
 		Production *prod = (Production *)retriveData(prodArray, i, PRODUCTION);
-
         if (!ifAllowTerminal && !isNonTerminal(prod->cur_symbol)) continue;
-
         appendCopy(appendedArray, &(prod->cur_symbol), INT);
 	}
 
@@ -238,7 +236,9 @@ DynamicArray *extract_appendCur_symbol(DynamicArray *prodArray, DynamicArray *ap
 }
 
 DynamicArray *extract_listCur_symbol(DynamicArray *prodArray, bool ifAllowTerminal){
+
     DynamicArray *listedCur_symbolArray = createDynamicArray(ARRAY_LENGTH(preset_expr_instance), true, getIntFromDataForSymbol, INT);
+
     return extract_appendCur_symbol(prodArray, listedCur_symbolArray, ifAllowTerminal);;
 }
 
@@ -263,7 +263,7 @@ state_id separateProds(DynamicArray *itemArray, DynamicArray *prodArray){
     Production *expected_prod = initializeProduction();
 
     state_id hashed_stateId = 0;
-    
+
     DynamicArray *clonedProdarray = cloneArray(prodArray, true, dummy_member);
 
     for(int i = 0; i < getArraySize(listedCur_symbolArray); i++) {
@@ -272,10 +272,7 @@ state_id separateProds(DynamicArray *itemArray, DynamicArray *prodArray){
 
         DynamicArray *fetchedProdbySingleSymbolArray = fetchCommonElements(clonedProdarray, cmpCur_symbol, (Data *)expected_prod, true, PRODUCTION);
 
-        //printProd(fetchedProdbySingleSymbolArray);
         readOneSymbol(fetchedProdbySingleSymbolArray);
-        
-        //if (isClosureItem(fetchedProdbySingleSymbolArray)) continue;
 
         hashed_stateId ^= constructItem(itemArray, fetchedProdbySingleSymbolArray, expected_symbol);
     }
@@ -318,16 +315,16 @@ state_id constructItem(DynamicArray *itemArray, DynamicArray *prodArray, int exp
 
     state_id new_stateId = getArraySize(itemArray);
 
+    printf("size: %d\n", getArraySize(itemArray));
     printProd(collectedProdArray);
     
 	Item *item = createItem(new_stateId, expected_symbol, getArraySize(collectedProdArray), (Production **)(collectedProdArray->data), calculateHash(collectedProdArray, getKeyFromProd, PRODUCTION));
 	append(itemArray, item, ITEM);
-    printf("size: %d\n", getArraySize(itemArray));
     
     disableModify(collectedProdArray);
 
 	if (!isClosureItem(collectedProdArray)) item->hashed_keys = separateProds(itemArray, collectedProdArray);
-    
+
     return new_stateId;
 }
 

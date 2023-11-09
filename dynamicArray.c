@@ -16,8 +16,8 @@ DynamicArray *createDynamicArray(int initialCapacity, bool ifAllowModify, int (*
     
 	if (referentMember != &dummy_member){
         arr->ifAllowOverlap = false;
-		arr->ifExistingEleArray = createEmptyUnsignedCharArray(initialCapacity);
-        arr->capacity_overlapArray = initialCapacity;
+		arr->ifExistingEleArray = createEmptyUnsignedCharArray(initialCapacity + 10);//+10 is for avoiding an error idk
+        arr->capacity_overlapArray = initialCapacity + 10;
     } else {
         arr->ifAllowOverlap = true;
     }
@@ -80,15 +80,16 @@ void appendCopy(DynamicArray *arr, void *element, Type type) {
 
 void reallocOverlapArray(DynamicArray *arr, int index) {
     int previous_capacity_size = arr->capacity_overlapArray;
-
     if (index > arr->capacity_overlapArray) {
         int new_capacity = index * 1.2 * sizeof(unsigned char);
-        
+		//printf("Before reallocation: arr->ifExistingEleArray = %p\n", (void *)arr->ifExistingEleArray);
         arr->ifExistingEleArray = realloc(arr->ifExistingEleArray, new_capacity);
-        arr->capacity_overlapArray = new_capacity;
+		//printf("After reallocation: arr->ifExistingEleArray = %p\n", (void *)arr->ifExistingEleArray);
+
         if (arr->ifExistingEleArray == NULL) error("Memory allocation failed\n");
-        //iintialize
-        for (int i = previous_capacity_size+1; i < new_capacity; i++) {
+        arr->capacity_overlapArray = new_capacity;
+        //intialize
+        for (int i = previous_capacity_size; i < new_capacity; i++) {
             arr->ifExistingEleArray[i] = 0;
         }
     }
@@ -98,7 +99,6 @@ bool ifExistInOverlap(DynamicArray *arr, int index) {
     if (index > 100) printf("warn: index exceeds 100: index == %d\n", index);
 
     reallocOverlapArray(arr, index);
-
     if (arr->ifExistingEleArray[index] == 1) return true;
     appendtoIndexOverlapArray(arr, index);
     return false;
@@ -197,8 +197,6 @@ DynamicArray *fetchCommonElements(DynamicArray *arr, bool (customCmp)(Data*, Dat
     return commonElementsArr;
 }
 
-//bool cmpHash_tranSymbol(Data *data1, Data *data2) {}
-
 //when hash and readSymbol are the same
 Item *fetchMatchingData(DynamicArray *itemArray, DynamicArray *expectedProdArray, int expectedSymbol) {
     if (getArraySize(itemArray) == 0) return dummy_item;
@@ -286,12 +284,12 @@ Production *getProdFromItem(Item *item, Type type) {
 
 unsigned char *createEmptyUnsignedCharArray(int size) {
 	unsigned char *unsignedCharArray = (unsigned char *)calloc(size, sizeof(unsigned char));
-	initializeUnsignedCharArraytoZero(unsignedCharArray);
+	initializeUnsignedCharArraytoZero(unsignedCharArray, size);
 	return unsignedCharArray;
 }
 
-void initializeUnsignedCharArraytoZero(unsigned char *unsignedCharArray) {
-	for (int i = 0; i < sizeof(unsignedCharArray); i++) {
+void initializeUnsignedCharArraytoZero(unsigned char *unsignedCharArray, int size) {
+	for (int i = 0; i < size; i++) {
 		unsignedCharArray[i] = 0;
 	}
 }
@@ -303,7 +301,7 @@ void destoryUnsignedCharArray(unsigned char *arr) {
 unsigned char *initializeOverlapArray(DynamicArray *existingElementArr, int (referentMember)(Data*, Type), Type type) {
 	unsigned char *ifExistingArray = createEmptyUnsignedCharArray(existingElementArr->capacity);
 	
-	initializeUnsignedCharArraytoZero(ifExistingArray);
+	initializeUnsignedCharArraytoZero(ifExistingArray, existingElementArr->capacity_overlapArray);
 	
 	//to eliminate excess prod which overlap with fetchedProdArray
 	for (int i = 0; i < getArraySize(existingElementArr); i++) {
