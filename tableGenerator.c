@@ -79,7 +79,7 @@ int getIntFromDataForSymbol(Data *data, Type type) {
     int sym = *(int *)data;
     if (sym > NON_TERMINAL_START) return abs(sym - NON_TERMINAL_START) + END_TERMINAL;
     if (TERMIANL_START < sym && sym < END_TERMINAL) return sym;
-    return -1;
+    return NONE;
 }
 
 int getKeyFromProd(Data *data, Type type) {
@@ -222,7 +222,7 @@ bool isClosureItem(DynamicArray *prodArr) {
 	return false;
 }
 
-DynamicArray *extract_appendCur_symbol(DynamicArray *prodArray, DynamicArray *appendedArray, bool ifAllowTerminal){
+DynamicArray *extract_curSymbol(DynamicArray *prodArray, DynamicArray *appendedArray, bool ifAllowTerminal){
 	if (prodArray->type != PRODUCTION) printf("type mismatch: listCur_symbol\n");
     if (appendedArray->type != INT) printf("type mismatch: listCur_symbol\n");
 
@@ -239,7 +239,7 @@ DynamicArray *extract_listCur_symbol(DynamicArray *prodArray, bool ifAllowTermin
 
     DynamicArray *listedCur_symbolArray = createDynamicArray(ARRAY_LENGTH(preset_expr_instance), true, getIntFromDataForSymbol, INT);
 
-    return extract_appendCur_symbol(prodArray, listedCur_symbolArray, ifAllowTerminal);;
+    return extract_curSymbol(prodArray, listedCur_symbolArray, ifAllowTerminal);;
 }
 
 Item *findExistingItem(DynamicArray *itemArray, DynamicArray *prodArray, int expected_readSymbol) {
@@ -252,19 +252,20 @@ Item *findExistingItem(DynamicArray *itemArray, DynamicArray *prodArray, int exp
     DynamicArray *fetchedItemArray = fetchCommonElements(itemArray, cmp_readSymbolHash_keyOfProdsInItem, (Data *)expected_item, false, ITEM);
     //this is supposed to exist just one item
     if (getArraySize(fetchedItemArray) >= 2) printf("fetchedItemArray isnt supposed to have %d elements", getArraySize(fetchedItemArray));
+    printf("getArraySize(fetchedItemArray): %d\n", getArraySize(fetchedItemArray));
     if (getArraySize(fetchedItemArray) == 1) return (Item *)retriveData(fetchedItemArray, 0, ITEM);
 
     return dummy_item;
 }
 
-state_id separateProds(DynamicArray *itemArray, DynamicArray *prodArray){
+state_id processNonTerminalSymbols(DynamicArray *itemArray, DynamicArray *prodArray){
     DynamicArray *listedCur_symbolArray = extract_listCur_symbol(prodArray, true);
 
     Production *expected_prod = initializeProduction();
 
     state_id hashed_stateId = 0;
 
-    DynamicArray *clonedProdarray = cloneArray(prodArray, true, dummy_member);
+    DynamicArray *clonedProdarray = cloneArray(prodArray, true, prodArray->referentMember);
 
     for(int i = 0; i < getArraySize(listedCur_symbolArray); i++) {
         int expected_symbol = *(int *)retriveData(listedCur_symbolArray, i, INT);
@@ -274,14 +275,15 @@ state_id separateProds(DynamicArray *itemArray, DynamicArray *prodArray){
 
         readOneSymbol(fetchedProdbySingleSymbolArray);
 
-        hashed_stateId ^= constructItem(itemArray, fetchedProdbySingleSymbolArray, expected_symbol);
+        int new_stateId = constructItem(itemArray, fetchedProdbySingleSymbolArray, expected_symbol);
+        if (new_stateId != -1) hashed_stateId ^= new_stateId;
     }
     free(expected_prod);
     
     return hashed_stateId;
 }
 
-DynamicArray *gatherProdswithSymbols(DynamicArray *prodArray) {
+DynamicArray *gatherProdswithSymbols(DynamicArray *prodArray) {    
     DynamicArray *listedCur_symbolArray = extract_listCur_symbol(prodArray, false);
     
     DynamicArray *presetProdArray = presetProductions();
@@ -294,9 +296,10 @@ DynamicArray *gatherProdswithSymbols(DynamicArray *prodArray) {
 
         DynamicArray *newly_fetchedProdbySingleSymbolArray = fetchCommonElements(presetProdArray, cmpLeftFromProd, (Data *)expected_prod, true, PRODUCTION);
 
-        extract_appendCur_symbol(newly_fetchedProdbySingleSymbolArray, listedCur_symbolArray, true);
+        extract_curSymbol(newly_fetchedProdbySingleSymbolArray, listedCur_symbolArray, true);
 
         copyPasteArray(newly_fetchedProdbySingleSymbolArray, prodArray);
+
         destroyDynamicArray(newly_fetchedProdbySingleSymbolArray);
         
         condition = getArraySize(listedCur_symbolArray);
@@ -306,12 +309,14 @@ DynamicArray *gatherProdswithSymbols(DynamicArray *prodArray) {
 }
 
 state_id constructItem(DynamicArray *itemArray, DynamicArray *prodArray, int expected_symbol) {
-	disableModify(prodArray);
-
+	//disableModify(prodArray);
+    printf("------------------a\n");
+    printProd(prodArray);
 	DynamicArray *collectedProdArray = gatherProdswithSymbols(prodArray);
-    
+    printProd(prodArray);
+    printf("------------------b\n");
 	Item *existingItem = findExistingItem(itemArray, collectedProdArray, expected_symbol);
-	if (existingItem != dummy_item) return -1 ;//if the item exists
+	if (existingItem != dummy_item) return -1 ;//when the item exists
 
     state_id new_stateId = getArraySize(itemArray);
 
@@ -323,7 +328,7 @@ state_id constructItem(DynamicArray *itemArray, DynamicArray *prodArray, int exp
     
     disableModify(collectedProdArray);
 
-	if (!isClosureItem(collectedProdArray)) item->hashed_keys = separateProds(itemArray, collectedProdArray);
+	if (!isClosureItem(collectedProdArray)) item->hashed_keys = processNonTerminalSymbols(itemArray, collectedProdArray);
 
     return new_stateId;
 }

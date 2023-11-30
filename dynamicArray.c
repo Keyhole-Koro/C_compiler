@@ -16,8 +16,8 @@ DynamicArray *createDynamicArray(int initialCapacity, bool ifAllowModify, int (*
     
 	if (referentMember != &dummy_member){
         arr->ifAllowOverlap = false;
-		arr->ifExistingEleArray = createEmptyUnsignedCharArray(initialCapacity + 10);//+10 is for avoiding an error idk
-        arr->capacity_overlapArray = initialCapacity + 10;
+		arr->elementExistsInArray = createEmptyUnsignedCharArray(initialCapacity);//+10 is for avoiding an error idk
+        arr->capacity_overlapArray = initialCapacity;
     } else {
         arr->ifAllowOverlap = true;
     }
@@ -57,7 +57,7 @@ void append(DynamicArray *arr, void *element, Type type) {
 
     normalReallocateDynamicArray(arr);
 
-    if (ifExistInOverlap(arr, arr->referentMember((Data *)element, type))) return;
+    if (ifAlreadyExist(arr, arr->referentMember((Data *)element, type))) return;
     
     Data *copied_ptr = (Data *)malloc(sizeof(element));
     if (copied_ptr == NULL) error("Memory allocation failed\n");
@@ -70,7 +70,7 @@ void appendCopy(DynamicArray *arr, void *element, Type type) {
     
     normalReallocateDynamicArray(arr);
 
-    if (ifExistInOverlap(arr, arr->referentMember((Data *)element, type))) return;
+    if (ifAlreadyExist(arr, arr->referentMember((Data *)element, type))) return;
     
     Data *copy_data_ptr = (Data *)malloc(getDataSize(type));
     if (copy_data_ptr == NULL) error("Memory allocation failed\n");
@@ -81,31 +81,31 @@ void appendCopy(DynamicArray *arr, void *element, Type type) {
 void reallocOverlapArray(DynamicArray *arr, int index) {
     int previous_capacity_size = arr->capacity_overlapArray;
     if (index > arr->capacity_overlapArray) {
-        int new_capacity = index * 1.2 * sizeof(unsigned char);
-		//printf("Before reallocation: arr->ifExistingEleArray = %p\n", (void *)arr->ifExistingEleArray);
-        arr->ifExistingEleArray = realloc(arr->ifExistingEleArray, new_capacity);
-		//printf("After reallocation: arr->ifExistingEleArray = %p\n", (void *)arr->ifExistingEleArray);
+        int new_capacity = index * 1.4 * sizeof(unsigned char);
 
-        if (arr->ifExistingEleArray == NULL) error("Memory allocation failed\n");
+        arr->elementExistsInArray = realloc(arr->elementExistsInArray, new_capacity);
+
+        if (arr->elementExistsInArray == NULL) error("Memory allocation failed\n");
         arr->capacity_overlapArray = new_capacity;
         //intialize
         for (int i = previous_capacity_size; i < new_capacity; i++) {
-            arr->ifExistingEleArray[i] = 0;
+            arr->elementExistsInArray[i] = 0;
         }
     }
 }
-bool ifExistInOverlap(DynamicArray *arr, int index) {
+bool ifAlreadyExist(DynamicArray *arr, int index) {
     if (arr->ifAllowOverlap) return false;
     if (index > 100) printf("warn: index exceeds 100: index == %d\n", index);
 
     reallocOverlapArray(arr, index);
-    if (arr->ifExistingEleArray[index] == 1) return true;
+
+    if (arr->elementExistsInArray[index] == 1) return true;
     appendtoIndexOverlapArray(arr, index);
     return false;
 }
 
 void appendtoIndexOverlapArray(DynamicArray *arr, int index) {
-	arr->ifExistingEleArray[index] = 1;
+	arr->elementExistsInArray[index] = 1;
 }
 
 void swapElement(DynamicArray *arr, int pos1, int pos2, Type type) {
@@ -179,7 +179,7 @@ int getProdKey(Data *data, Type type) {
 }
 
 DynamicArray *fetchCommonElements(DynamicArray *arr, bool (customCmp)(Data*, Data*, Type), Data *expected_data, bool ifRemoveElement, Type type) {
-    DynamicArray *commonElementsArr = createDynamicArray(getArraySize(arr), true, &dummy_member, type);
+    DynamicArray *commonElementsArr = createDynamicArray(getArraySize(arr), true, arr->referentMember, type);
 	int condition = getArraySize(arr);
     
     for (int i = 0; i < condition; i++) {
@@ -259,22 +259,6 @@ Data *extractCertainData(DynamicArray *arr, bool (customCmp)(Data*, Data* ,Type)
     return dummy_data;//not yet defined
 }
 
-//may not needed
-void eliminateOverlap(DynamicArray *arr, int (referentMember)(Data*, Type), int start_point, Type type) {
-	int numElements = getArraySize(arr);
-    unsigned char *ifExistingArray = createEmptyUnsignedCharArray(numElements);
-    
-	for (int i = 0; i < numElements; i++) {
-		Data *data = retriveData(arr, i, type);
-		if (ifExistingArray[referentMember(data, type) - start_point] == 1) {
-			removeElement(arr, i, type);
-			continue;
-		}
-		ifExistingArray[referentMember(data, type) - start_point] = 1;
-	}
-    destoryUnsignedCharArray(ifExistingArray);
-}
-
 Production *getProdFromItem(Item *item, Type type) {
 	if (type != ITEM) error("type mismatch: getProdFromItem\n");
 	Production *prod = *item->Productions;
@@ -296,19 +280,6 @@ void initializeUnsignedCharArraytoZero(unsigned char *unsignedCharArray, int siz
 
 void destoryUnsignedCharArray(unsigned char *arr) {
     free(arr);
-}
-
-unsigned char *initializeOverlapArray(DynamicArray *existingElementArr, int (referentMember)(Data*, Type), Type type) {
-	unsigned char *ifExistingArray = createEmptyUnsignedCharArray(existingElementArr->capacity);
-	
-	initializeUnsignedCharArraytoZero(ifExistingArray, existingElementArr->capacity_overlapArray);
-	
-	//to eliminate excess prod which overlap with fetchedProdArray
-	for (int i = 0; i < getArraySize(existingElementArr); i++) {
-		Data *data = retriveData(existingElementArr, i, type);
-		ifExistingArray[referentMember(data, type)] = 1;
-	}
-	return ifExistingArray;
 }
 
 int qsortPartition(DynamicArray *arr, int (referentFunc)(Data *, Type), int low, int high, Type type) {

@@ -19,7 +19,7 @@ typedef struct {
     Type type;
     Data **data;
 	bool ifAllowOverlap;//true allows overlapping //!be careful not to handle big numbers
-	unsigned char *ifExistingEleArray;//its array contains 0 1 once value appears its contained the corresponding index by 1
+	unsigned char *elementExistsInArray;//its array contains 0 1 once value appears its contained the corresponding index by 1
     int capacity_overlapArray;
     int (*referentMember)(Data*, Type);
     int offset;
@@ -72,7 +72,7 @@ int calculateHash(DynamicArray *array, int (referentElement)(Data*, Type), Type)
 
 Production *getProdFromItem(Item *item, Type);
 
-bool ifExistInOverlap(DynamicArray *arr, int index);
+bool ifAlreadyExist(DynamicArray *arr, int index);
 unsigned char *createEmptyUnsignedCharArray(int size);
 void initializeUnsignedCharArraytoZero(unsigned char *unsignedCharArray, int size);
 unsigned char *initializeOverlapArray(DynamicArray *existingElementArr, int (referentMember)(Data*, Type), Type type);
