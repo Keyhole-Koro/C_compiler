@@ -1,16 +1,9 @@
 #ifndef TOKEN_H
 #define TOKEN_H
 
-#include <ctype.h>
-#include <stdarg.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include "utils.h"
 
-#include "pseudoVector.c"
-
-enum {
+typedef enum {
     ADD,      // +
     SUB,      // -
     MUL,      // *
@@ -38,7 +31,6 @@ enum {
     POINTER,  // *
     ADDRESS,  // &
     MEMBER,   // ->
-    SIZEOF,   // sizeof
 
     BOOL,     // bool
     INT,      // int
@@ -88,12 +80,19 @@ enum {
     CARET,         // ^
     HASH,          // #
 
+    DOUBLE_SLASH,  // //
+
     NUMBER, // number
 
     IDENTIFIER, // defined by user
 
     INLINE // inline but not implemented
-};
+} TokenKind;
+
+typedef struct {
+  TokenKind Tk;
+  char value;
+} Token;
 
 struct KeyValue {
   char *Key;
@@ -177,5 +176,7 @@ struct KeyValue single_char[] = {
   {"#", HASH},
   {"&", BITAND},
 };
+
+int findCorrespondToken(char *substring, size_t substring_length, struct KeyValue *symbols);
 
 #endif
