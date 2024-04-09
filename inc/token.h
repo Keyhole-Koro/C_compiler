@@ -3,6 +3,8 @@
 
 #include "utils.h"
 
+typedef int symbol_s;
+
 typedef enum {
     ADD,      // +
     SUB,      // -

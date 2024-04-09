@@ -9,7 +9,7 @@ INCLUDE_DIR = ./inc
 BUILD_DIR = ./build
 
 # Find all header files in inc directory
-INC_FILES := $(wildcard ./inc/*.h) $(wildcard ./inc/**/*.h)
+INC_FILES := $(wildcard ./inc/*.h)
 
 # Create build directory if not exists
 $(shell mkdir -p $(BUILD_DIR))

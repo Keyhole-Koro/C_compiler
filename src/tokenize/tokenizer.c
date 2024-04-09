@@ -34,7 +34,7 @@ DynamicArray *tokenize(char *input) {
     }
 
     if (strchr("+-*/;=(){},<>[]&.!?:|^%~#", *ipt)) {
-      TokenKind kind = findToken(ipt++, 1, single_char);
+      TokenKind kind = findCorrespondToken(ipt++, 1, single_char);
       addToDynamicArray(arr, makeToken(kind, NULL), Tk);
       continue;
     }
