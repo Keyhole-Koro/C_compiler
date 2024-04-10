@@ -9,6 +9,7 @@
 #include <string.h>
 
 #include "dynamicArray.h"
+#include "dataTypeHandler.h"
 
 #include "token.h"
 #include "utils.h"

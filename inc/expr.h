@@ -3,6 +3,7 @@
 
 #include "dataTypeHandler.h"
 
+#include "token.h"
 #include "utils.h"
 
 typedef struct {
@@ -12,5 +13,7 @@ typedef struct {
 } Expr;
 
 Expr *initializedExpr();
+
+void registerExpr(Token left, Token *right);
 
 #endif

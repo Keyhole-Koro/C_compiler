@@ -1,5 +1,12 @@
 #include "tokenizer.h"
 
+Token *makeToken(int kind, char *val) {
+  Token *tk = malloc(sizeof(Token));
+  tk->Tk = kind;
+  tk->Value = val;
+  return tk;
+}
+
 DynamicArray *tokenize(char *input) {
   DataType *Tk = registerDataType("token", sizeof(TokenKind));
 

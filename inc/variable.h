@@ -1,3 +1,6 @@
+#ifndef VARIABLE_H
+#define VARIABLE_H
+
 typedef struct Variable Variable;
 
 struct Variable {
@@ -8,3 +11,5 @@ struct Variable {
 };
 
 Variable *locals;
+
+#endif

@@ -6,6 +6,8 @@
 typedef int symbol_s;
 
 typedef enum {
+    TERMIANL_START, // This and END_TERMINAL are used to distinguish from non terminal
+
     ADD,      // +
     SUB,      // -
     MUL,      // *
@@ -88,96 +90,24 @@ typedef enum {
 
     IDENTIFIER, // defined by user
 
-    INLINE // inline but not implemented
+    INLINE, // inline but not implemented
+
+    END_TERMINAL
 } TokenKind;
 
 typedef struct {
   TokenKind Tk;
-  char value;
+  char *Value;
 } Token;
 
 struct KeyValue {
   char *Key;
-  int Value;
+  symbol_s Value;
 };
 
-struct KeyValue operators[] = {
-  {"==", EQ},
-  {"!=", NEQ},
-  {"<=", LTE},
-  {">=", GTE},
-  {"&&", AND},
-  {"||", OR},  
-  {"<<", SHL},
-  {">>", SHR},
-  {"++", INC},
-  {"--", DEC},
-  {"*", POINTER},
-  {"->", MEMBER},
-};
-
-struct KeyValue keywords[] = {
-  {"sizeof", SIZEOF},
-  {"bool", BOOL},
-  {"int", INT},
-  {"char", CHAR},
-  {"float", FLOAT},
-  {"double", DOUBLE},
-  {"void", VOID},
-  {"long", LONG},
-  {"short", SHORT},
-  {"unsigned", UNSIGNED},
-  {"signed", SIGNED},
-  {"const", CONST},
-  {"static", STATIC},
-  {"extern", EXTERN},
-  {"auto", AUTO},
-  {"register", REGISTER},
-  {"if", IF},
-  {"else", ELSE},
-  {"while", WHILE},
-  {"do", DO},
-  {"for", FOR},
-  {"switch", SWITCH},
-  {"case", CASE},
-  {"default", DEFAULT},
-  {"break", BREAK},
-  {"continue", CONTINUE},
-  {"return", RETURN},
-  {"typedef", TYPEDEF},
-  {"struct", STRUCT},
-  {"union", UNION},
-  {"enum", ENUM},
-  {"sizeof", SIZEOF},
-};
-
-struct KeyValue single_char[] = {
-  {"+", ADD},
-  {"-", SUB},
-  {"*", MUL},
-  {"/", DIV},
-  {"%", MOD},
-  {"=", ASSIGN},
-  {"(", L_PARENTHESES},
-  {")", R_PARENTHESES},
-  {";", SEMICOLON},
-  {",", COMMA},
-  {"{", L_BRACE},
-  {"}", R_BRACE},
-  {"[", L_BRACKET},
-  {"]", R_BRACKET},
-  {"<", LT},
-  {">", GT},
-  {".", DOT},
-  {"!", NOT},
-  {"?", QUESTION},
-  {":", COLON},
-  {"|", BITOR},
-  {"^", BITXOR},
-  {"~", BITNOT},
-  {"#", HASH},
-  {"&", BITAND},
-};
+extern struct KeyValue operators[];
+extern struct KeyValue keywords[];
+extern struct KeyValue single_char[];
 
 int findCorrespondToken(char *substring, size_t substring_length, struct KeyValue *symbols);
 

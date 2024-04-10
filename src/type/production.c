@@ -10,7 +10,7 @@ Production *initializedProduction() {
 }
 
 inline void updateCur_symbol(Production *prod) {
-    prod->cur_symbol = getRightFromProd((void*)prod, prod->readPosition, retriveDataType("prod"));
+    prod->cur_symbol = getRightFromProd((void*)prod, prod->readPosition, retrieveDataType("prod"));
 }
 
 inline int lookAheadSymbol(Production *prod) {
@@ -40,7 +40,7 @@ inline int getCur_symbol(void *data, DataType *dataType) {
 }
 
 inline int getCur_symbolForOverlapHandler(void *data, DataType *dataType) {
-	if (strcmp(dataType->name, "prod" && datastrcmp(dataType->name, "int"))) error("type mismatch: getCur_symbolForOverlapHandler\n");
+	if (strcmp(dataType->name, "prod") && strcmp(dataType->name, "int")) error("type mismatch: getCur_symbolForOverlapHandler\n");
 	Production *prod = (Production *)(data);
 	return prod->cur_symbol - NON_TERMINAL_START;
 }

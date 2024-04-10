@@ -3,6 +3,7 @@
 
 #include "type.h"
 #include "dataTypeHandler.h"
+#include "LR1_token.h"
 #include "utils.h"
 
 #endif

@@ -5,6 +5,7 @@
 
 #include "expr.h"
 #include "token.h"
+#include "LR1_token.h"
 #include "utils.h"
 
 typedef struct {
