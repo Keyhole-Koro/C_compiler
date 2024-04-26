@@ -3,11 +3,9 @@
 
 #include "utils.h"
 
-typedef int symbol_s;
+typedef int symbol;
 
 typedef enum {
-    TERMIANL_START, // This and END_TERMINAL are used to distinguish from non terminal
-
     ADD,      // +
     SUB,      // -
     MUL,      // *
@@ -92,23 +90,25 @@ typedef enum {
 
     INLINE, // inline but not implemented
 
-    END_TERMINAL
 } TokenKind;
 
-typedef struct {
-  TokenKind Tk;
-  char *Value;
-} Token;
+typedef struct Token Token;
+
+struct Token{
+  TokenKind kind;
+  char *value;
+  Token *next;
+};
 
 struct KeyValue {
   char *Key;
-  symbol_s Value;
+  symbol Value;
 };
 
 extern struct KeyValue operators[];
 extern struct KeyValue keywords[];
 extern struct KeyValue single_char[];
 
-int findCorrespondToken(char *substring, size_t substring_length, struct KeyValue *symbols);
+symbol findTokenKind(char *key);
 
 #endif

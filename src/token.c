@@ -1,6 +1,5 @@
 #include "token.h"
 
-
 struct KeyValue operators[] = {
   {"==", EQ},
   {"!=", NEQ},
@@ -79,23 +78,29 @@ struct KeyValue single_char[] = {
   {"&", BITAND},
 };
 
-bool ifMatch(char *target, char *pattern, size_t read_size){
-  size_t pattern_length = strlen(pattern);
-
-  if (read_size > pattern_length) return false;
-
-	if (strncmp(target, pattern, read_size) == 0) return true;
-	return false;
-}
+int size_single_char = sizeof(single_char) / sizeof(single_char[0]);
+int size_keywords = sizeof(keywords) / sizeof(keywords[0]);
+int size_operators = sizeof(operators) / sizeof(operators[0]);
 
 /** @brief find the corresponding Token from keyvalue declared in token.h **/
-int findCorrespondToken(char *substring, size_t substring_length, struct KeyValue *symbols) {
-  size_t size = sizeof(symbols) / sizeof(symbols[0]);
-  for (int i = 0; i < size; i++) {
-    char *key = symbols[i].Key;
-    if (ifMatch(substring, key, substring_length)) {
-        return symbols[i].Value;
+symbol findTokenKind(char *key) {
+    void *target = NULL;
+    int size = 0;
+    
+    if (strlen(key) == 1) {
+      target = single_char;
+      size = size_single_char;
+    } else if (isAlphabet(key)) {
+      target = keywords;
+      size = size_keywords;
+    } else {
+      target = operators;
+      size = size_operators;
     }
-  }
-  return -1;
+
+    for (int i = 0; i < size; i++) {
+        char *keyStr = ((struct KeyValue *)target)[i].Key;
+        if (strcmp(keyStr, key) == 0) return ((struct KeyValue *)target)[i].Value;
+    }
+    return -1;
 }

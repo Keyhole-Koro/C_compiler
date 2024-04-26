@@ -1,68 +1,81 @@
 #include "tokenizer.h"
 
-Token *makeToken(int kind, char *val) {
-  Token *tk = malloc(sizeof(Token));
-  tk->Tk = kind;
-  tk->Value = val;
-  return tk;
-}
+Token *createToken(Token *cur, int kind, char *value);
 
-DynamicArray *tokenize(char *input) {
-  DataType *Tk = registerDataType("token", sizeof(TokenKind));
+Token *tokenize(char *input) {
+  Token *cur = calloc(1, sizeof(Token));
+  cur->next = NULL;
+  Token *head = cur;
 
-  DynamicArray *arr = createDynamicArray("Tokens", 200, true, true, NULL, Tk);
+  char *ptr = input;
+  char *rest = NULL;
 
-  char *ipt = input;
-  char *idfd_val = NULL;
-
-  while (*ipt) {
-    if (isspace(*ipt)) {
-      ipt++;
+  while (*ptr) {
+    
+    if (isspace(*ptr) || isTab(ptr)) {
+      ptr++;
       continue;
     }
 
-    if (isIndentation(ipt)) {
-      ipt += 2;
+    if (*ptr == '/' && *(ptr + 1) == '/') {
+      char *buf = readWhile(isEnd, ptr, &rest);
+      free(buf);
+      ptr = rest;
       continue;
     }
 
-    if (*ipt == '/' && *(ipt + 1) == '/') { // //
-      char *dummy = NULL;
-      char *end_target = readNextUntil(isIndentation, dummy, ipt);
-      ipt = end_target;
-      continue;
-    }
-
-    if (*ipt == '/' && *(ipt + 1) == '*') { // /*
-      char *dummy = NULL;
-      char *end_target = readNextUntil(isEndComment, dummy, ipt);
-      ipt = end_target;
-      continue;
-    }
-
-    if (strchr("+-*/;=(){},<>[]&.!?:|^%~#", *ipt)) {
-      TokenKind kind = findCorrespondToken(ipt++, 1, single_char);
-      addToDynamicArray(arr, makeToken(kind, NULL), Tk);
-      continue;
-    }
-
-    if (isAlphabet_Underbar(ipt)) {
-      char *idfr_buffer = NULL;
-      char *end_target = readNextUntil(isAlphabet_Num_Underbar, idfr_buffer, ipt);
-      addToDynamicArray(arr, makeToken(IDENTIFIER, idfd_val), Tk);
-      ipt = end_target;
+    if (*ptr == '*' && *(ptr + 1) == '/') {
+      char *buf = readWhile(isEndComment, ptr, &rest);
+      free(buf);
+      ptr = rest;
       continue;
     }
     
-    if (!isAlphabet_Num_Underbar(ipt)) {
-      char *idfr_buffer = NULL;
-      char *end_target = readNextUntil(!isAlphabet_Num_Underbar, idfr_buffer, ipt);
-      TokenKind kind = findCorrespondToken(ipt++, 1, single_char);
-      // if (kind == -1) failed to tokenize
-      ipt = end_target;
+    if (strchr("+-*/;=(){},<>[]&.!?:|^%~#", *ptr)) {
+      char char_buf[2] = {*ptr, '\0'};
+      TokenKind kind = findTokenKind(&char_buf);
+      cur = createToken(cur, kind, NULL);
+      ptr++;
       continue;
     }
+
+    if (isNumber(ptr)) {
+      char *buf = readWhile(isNumber, ptr, &rest);
+      cur = createToken(cur, NUMBER, buf);
+      ptr = rest;
+      continue;
+    }
+
+    if (isAlphabet_Underbar(ptr)) {
+      char *str = readWhile(isAlphabet_Num_Underbar, ptr, &rest);
+      TokenKind kind = findTokenKind(str);
+      // -1 indicates token kind not found
+      if (kind == (TokenKind)-1) kind = IDENTIFIER;
+      cur = createToken(cur, kind, str);
+      ptr = rest;
+      continue;
+    }
+    
+    if (!isAlphabet_Num_Underbar(ptr)) {
+      char *str = readWhile(isNOTAlphabet_Num_Underbar, ptr, &rest);
+      TokenKind kind = findTokenKind(str);
+      cur = createToken(cur, IDENTIFIER, str);
+      ptr = rest;
+      continue;
+      
+    }
+    error("token kind not found");
+    ptr++;
   }
 
-  return arr;
+  return head->next;
+}
+
+Token *createToken(Token *cur, int kind, char *value) {
+  Token *newTk = malloc(sizeof(Token));
+  newTk->kind = kind;
+  newTk->value = value;
+  newTk->next = NULL;
+  cur->next = newTk;
+  return newTk;
 }

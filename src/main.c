@@ -1,9 +1,12 @@
 #include "main.h"
 
 int main() {
-    // Test your tokenize function here
-    char input[] = "int main() { return 0; }";
-    DynamicArray *tokens = tokenize(input);
+    char *input = "int main() { return 0; }";
+    Token *tokens = tokenize(input);
+
+    for (Token *tk = tokens; tk; tk = tk->next) {
+        printf("kind %d value %s\n", tk->kind, tk->value);
+    }
 
     return 0;
 }

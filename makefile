@@ -1,7 +1,6 @@
 CC = clang
 LD = lld
-LIBS = -lm -I./DynamicArray/inc
-CFLAGS = -Wall -Wextra -std=c99 $(LIBS)
+CFLAGS = -Wall -Wextra -std=c99
 LDFLAGS = -fuse-ld=$(LD)
 EXECUTABLE = output
 SRC = $(wildcard ./src/*.c) $(wildcard ./src/**/*.c)

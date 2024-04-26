@@ -16,15 +16,19 @@
 
 void error(char ch[]);
 
-char *readNextUntil(IN bool (*)(char*), OUT char *buffer, IN char *ptr_letter);
+char *readWhile(bool (*condition)(char*), char *ipt, char **rest);
 
+bool isTab(char *letter);
+bool isEnd(char *letter);
 bool isEndComment(char *letter);
-bool isIndentation(char *letter);
 bool isAlphabet_Num_Underbar(char *letter);
 bool isAlphabet(char *letter);
+bool isNumber(char *letter);
 bool isAlphabet_Underbar(char *letter);
 bool isAlphabet_Num(char *letter);
 
-void updateHashedStateId(int *updatedId, int stateId);
+bool isNOTAlphabet_Num_Underbar(char *letter);
+
+bool isInString(char letter, char *str);
 
 #endif
