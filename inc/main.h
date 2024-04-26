@@ -2,6 +2,6 @@
 #define MAIN_H
 
 #include "token.h"
-#include "tokenizer.h"
+#include "tokenize.h"
 
 #endif
