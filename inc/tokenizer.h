@@ -13,4 +13,5 @@
 
 Token *tokenize(char *input);
 
+void showTokens(Token *head_tk);
 #endif

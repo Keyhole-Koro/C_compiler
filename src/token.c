@@ -78,9 +78,9 @@ struct KeyValue single_char[] = {
   {"&", BITAND},
 };
 
-int size_single_char = sizeof(single_char) / sizeof(single_char[0]);
-int size_keywords = sizeof(keywords) / sizeof(keywords[0]);
-int size_operators = sizeof(operators) / sizeof(operators[0]);
+const int size_single_char = sizeof(single_char) / sizeof(single_char[0]);
+const int size_keywords = sizeof(keywords) / sizeof(keywords[0]);
+const int size_operators = sizeof(operators) / sizeof(operators[0]);
 
 /** @brief find the corresponding Token from keyvalue declared in token.h **/
 symbol findTokenKind(char *key) {
@@ -103,4 +103,28 @@ symbol findTokenKind(char *key) {
         if (strcmp(keyStr, key) == 0) return ((struct KeyValue *)target)[i].Value;
     }
     return -1;
+}
+
+typedef struct SetKeyValue SetKeyValue;
+struct SetKeyValue{
+    struct KeyValue *target;
+    int size;
+    struct SetKeyValue *next;
+};
+
+SetKeyValue skv = 
+  (SetKeyValue){(struct KeyValue*)&single_char, size_single_char, 
+  &((SetKeyValue){(struct KeyValue*)&keywords, size_keywords,
+  &((SetKeyValue){(struct KeyValue*)&operators, size_operators, NULL})})};
+
+char *revertToken(Token *tk) {
+  symbol sym = tk->kind;
+    for (SetKeyValue *kv = &skv; kv; kv = kv->next) {
+        for (int j = 0; j < kv->size; j++) {
+            symbol value = kv->target[j].Value;
+            if (value == sym) return kv->target[j].Key;
+        }
+    }
+    if (tk->value) return tk->value;
+    return NULL;
 }

@@ -110,5 +110,6 @@ extern struct KeyValue keywords[];
 extern struct KeyValue single_char[];
 
 symbol findTokenKind(char *key);
+char *revertToken(Token *tk);
 
 #endif

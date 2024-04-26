@@ -33,7 +33,7 @@ Token *tokenize(char *input) {
     
     if (strchr("+-*/;=(){},<>[]&.!?:|^%~#", *ptr)) {
       char char_buf[2] = {*ptr, '\0'};
-      TokenKind kind = findTokenKind(&char_buf);
+      TokenKind kind = findTokenKind(char_buf);
       cur = createToken(cur, kind, NULL);
       ptr++;
       continue;
@@ -78,4 +78,11 @@ Token *createToken(Token *cur, int kind, char *value) {
   newTk->next = NULL;
   cur->next = newTk;
   return newTk;
+}
+
+void showTokens(Token *head) {
+  for (Token *tk = head; tk; tk = tk->next) {
+        printf("kind %u  %s\n", tk->kind, revertToken(tk));
+    }
+
 }
