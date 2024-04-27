@@ -95,7 +95,7 @@ Token *createToken(Token *cur, int kind, char *value) {
 
 void showTokens(Token *head) {
   for (Token *tk = head; tk; tk = tk->next) {
-        printf("kind %u  %s\n", tk->kind, revertToken(tk));
+        DEBUG_PRINT("kind %u  %s\n", tk->kind, revertToken(tk));
     }
 
 }

@@ -5,6 +5,8 @@
 
 #include "token.h"
 
+#include "debug.h"
+
 typedef enum {
     AST_NUMBER,
 

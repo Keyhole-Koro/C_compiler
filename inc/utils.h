@@ -1,11 +1,6 @@
 #ifndef UTILITIES_H
 #define UTILITIES_H
 
-#define ARRAY_LENGTH(arr) (sizeof(arr) / sizeof(arr[0]))
-#define SIZE_OF_A_MEMORY (8)
-
-#define nullptr ((void *)0)
-
 #define IN
 #define OUT
 

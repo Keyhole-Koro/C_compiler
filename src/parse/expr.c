@@ -30,11 +30,11 @@ Node *functor(Token **cur) {
             *cur = (*cur)->next;
             return new_node;
         } else {
-            fprintf(stderr, "Nothing inside ()\n");
+            DEBUG_PRINT("Nothing inside ()\n");
             exit(1);
         }
     } else {
-        fprintf(stderr, "Unexpected token\n");
+        DEBUG_PRINT("Unexpected token\n");
         exit(1);
     }
     return new_node;

@@ -33,7 +33,8 @@ debug: $(BUILD_DIR)/$(EXECUTABLE)
 	./$(BUILD_DIR)/$(EXECUTABLE)
 	
 asm: $(ASM_BUILD)
-	$(AS) $(ASFLAGS) -o $(BUILD_DIR)/executable $(ASM_BUILD)
-	./$(BUILD_DIR)/executable
+	$(AS) $(ASFLAGS) -o $(ASM_BUILD_DIR)/asm_obj.o $(ASM_BUILD)
+	$(CC) -o $(ASM_BUILD_DIR)/asm_output $(ASM_BUILD_DIR)/asm_obj.o
+	./$(ASM_BUILD_DIR)/asm_output
 
 .PHONY: all clean run asm

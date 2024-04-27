@@ -5,6 +5,8 @@
 
 #include "AST.h"
 
+#include "debug.h"
+
 void asmGen(Node *root);
 
 #endif

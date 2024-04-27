@@ -1,9 +1,8 @@
 bits 64
 section .text
-global _start
-extern write, exit
-_start:
+global main
 
+main:
     mov eax, 5
     push rax
     mov eax, 3
@@ -23,12 +22,18 @@ _start:
     pop rbx
     sub eax, ebx
 
+    mov [result], rax
+    mov rax, result
+
     mov rsi, rax
-    mov rdx, 14
+    mov rdx, 8
     mov rdi, 1
     mov rax, 1
     syscall
-    ret
+
+    mov rdi, 0
+    mov rax, 60
+    syscall
 
 section .data
-result_format db "Result: %d", 10, 0
+result dq 0

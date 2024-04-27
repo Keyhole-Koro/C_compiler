@@ -11,7 +11,7 @@ void printPreorder(Node* node, int depth, char branch) {
     if (node == NULL)
         return;
     
-    printf("%*s%c-- %d\n", depth * 4, "", branch, node->num);
+    DEBUG_PRINT("%*s%c-- %d\n", depth * 4, "", branch, node->num);
 
     printPreorder(node->left, depth + 1, '|');
 

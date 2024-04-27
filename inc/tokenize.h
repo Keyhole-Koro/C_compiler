@@ -11,6 +11,8 @@
 #include "token.h"
 #include "utils.h"
 
+#include "debug.h"
+
 Token *tokenize(char *input);
 
 void showTokens(Token *head_tk);
