@@ -6,6 +6,6 @@
 
 #include "expr.h"
 
-void parse(Token *hive_token);
+Node *parse(Token *hive_token);
 
 #endif

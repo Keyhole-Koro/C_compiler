@@ -6,4 +6,6 @@
 
 Node *expr(Token **cur);
 
+bool isOperator(AST_Type type);
+
 #endif

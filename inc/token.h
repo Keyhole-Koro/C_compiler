@@ -90,6 +90,8 @@ typedef enum {
 
     INLINE, // inline but not implemented
 
+    EOT, // end of token
+
 } TokenKind;
 
 typedef struct Token Token;

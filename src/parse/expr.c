@@ -2,6 +2,9 @@
 
 #include <stdbool.h>
 
+Node *functor(Token **cur);
+Node *term(Token **cur);
+
 bool isOperator(AST_Type type) {
     switch (type){
         case AST_ADD:

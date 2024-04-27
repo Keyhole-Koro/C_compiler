@@ -1,4 +1,4 @@
-#include "tokenizer.h"
+#include "tokenize.h"
 
 Token *createToken(Token *cur, int kind, char *value);
 
@@ -30,6 +30,17 @@ Token *tokenize(char *input) {
       ptr = rest;
       continue;
     }
+
+    if (*ptr == '-') {
+      char *numStr = readWhile(isNumber, ++ptr, &rest);
+      if (strlen(numStr) < 1) cur = createToken(cur, SUB, NULL);
+      else {
+        char sign = '-';
+        cur = createToken(cur, NUMBER, strcat(&sign, numStr));
+      }
+      ptr = rest;
+      continue;
+    }
     
     if (strchr("+-*/;=(){},<>[]&.!?:|^%~#", *ptr)) {
       char char_buf[2] = {*ptr, '\0'};
@@ -44,13 +55,6 @@ Token *tokenize(char *input) {
       cur = createToken(cur, NUMBER, buf);
       ptr = rest;
       continue;
-    }
-
-    if (*ptr == '-') {
-      char *numStr = readWhile(isNumber, ++ptr, &rest);
-      if (strlen(numStr) < 1) error("insufficient token\n");
-      cur = createToken(cur, NUMBER, strcat('-', numStr));
-      ptr = rest;
     }
 
     if (isAlphabet_Underbar(ptr)) {
@@ -74,6 +78,8 @@ Token *tokenize(char *input) {
     error("token kind not found");
     ptr++;
   }
+
+  createToken(cur, EOT, NULL);
 
   return head->next;
 }

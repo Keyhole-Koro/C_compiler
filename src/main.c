@@ -1,12 +1,14 @@
 #include "main.h"
 
 int main() {
-    char *input = "1 + 1 * 4";
+    char *input = "5 - 3 / (2 + 1) * 4";
     Token *tokens = tokenize(input);
 
-    showTokens(tokens);
+    //showTokens(tokens);
 
     Node *root = parse(tokens);
+
+    //printPreorder(root, 0, ' ');
 
     asmGen(root);
     

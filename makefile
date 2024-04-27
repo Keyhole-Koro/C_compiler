@@ -10,24 +10,30 @@ SRC = $(wildcard ./src/*.c) $(wildcard ./src/**/*.c)
 INCLUDE_DIR = ./inc
 BUILD_DIR = ./build
 
-ASM_BUILD = $(BUILD_DIR)/asm/output.asm
+ASM_BUILD_DIR = $(BUILD_DIR)/asm
+ASM_BUILD = $(ASM_BUILD_DIR)/output.asm
 
 INC_FILES := $(wildcard ./inc/*.h)
 
 $(shell mkdir -p $(BUILD_DIR))
-$(shell mkdir -p $(BUILD_DIR)/asm)
+$(shell mkdir -p $(ASM_BUILD_DIR))
 
 all: $(BUILD_DIR)/$(EXECUTABLE)
 
 $(BUILD_DIR)/$(EXECUTABLE): $(SRC)
-    $(CC) $(CFLAGS) -I$(INCLUDE_DIR) -o $@ $^ $(LDFLAGS)
+	$(CC) $(CFLAGS) -I$(INCLUDE_DIR) -o $@ $^ $(LDFLAGS)
 
 clean:
-    rm -f $(BUILD_DIR)/$(EXECUTABLE)
+	rm -f $(BUILD_DIR)/$(EXECUTABLE)
 
-asm_output.asm: $(BUILD_DIR)/$(EXECUTABLE)
-    ./$(BUILD_DIR)/$(EXECUTABLE) > $(ASM_BUILD)
+$(ASM_BUILD): $(BUILD_DIR)/$(EXECUTABLE)
+	./$(BUILD_DIR)/$(EXECUTABLE) > $(ASM_BUILD)
 
-run: asm_output.asm
-    $(AS) $(ASFLAGS) -o $(BUILD_DIR)/executable $(ASM_BUILD)
-    ./$(BUILD_DIR)/executable
+debug: $(BUILD_DIR)/$(EXECUTABLE)
+	./$(BUILD_DIR)/$(EXECUTABLE)
+	
+asm: $(ASM_BUILD)
+	$(AS) $(ASFLAGS) -o $(BUILD_DIR)/executable $(ASM_BUILD)
+	./$(BUILD_DIR)/executable
+
+.PHONY: all clean run asm

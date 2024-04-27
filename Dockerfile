@@ -8,6 +8,7 @@ RUN apt-get update && \
     clang \
     git \
     lld \
+    nasm \
     && rm -rf /var/lib/apt/lists/*
 
 SHELL ["/bin/bash", "-c"]
