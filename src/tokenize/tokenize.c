@@ -46,6 +46,13 @@ Token *tokenize(char *input) {
       continue;
     }
 
+    if (*ptr == '-') {
+      char *numStr = readWhile(isNumber, ++ptr, &rest);
+      if (strlen(numStr) < 1) error("insufficient token\n");
+      cur = createToken(cur, NUMBER, strcat('-', numStr));
+      ptr = rest;
+    }
+
     if (isAlphabet_Underbar(ptr)) {
       char *str = readWhile(isAlphabet_Num_Underbar, ptr, &rest);
       TokenKind kind = findTokenKind(str);

@@ -1,7 +1,7 @@
 #include "main.h"
 
 int main() {
-    char *input = "int main() { return 0; }";
+    char *input = "1 + 1 * 4";
     Token *tokens = tokenize(input);
 
     showTokens(tokens);

@@ -1,6 +1,8 @@
 #ifndef AST_H
 #define AST_H
 
+#include "token.h"
+
 typedef enum {
     AST_NUMBER,
 
@@ -17,5 +19,7 @@ typedef struct {
     struct Node *left;
     struct Node *right;
 } Node;
+
+Node *createNode(AST_Type type, char *val);
 
 #endif
