@@ -21,16 +21,16 @@ void exprGen(Node *root){
         printf("    pop ebx\n");
         
         switch (root->type) {
-            case AST_OPERATOR_ADD:
+            case AST_ADD:
                 printf("    add eax, ebx\n");
                 break;
-            case AST_OPERATOR_SUB:
+            case AST_SUB:
                 printf("    sub eax, ebx\n");
                 break;
-            case AST_OPERATOR_MUL:
+            case AST_MUL:
                 printf("    imul eax, ebx\n");
                 break;
-            case AST_OPERATOR_DIV:
+            case AST_DIV:
                 printf("    idiv ebx\n");
                 break;
             default:
