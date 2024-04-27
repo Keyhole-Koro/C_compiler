@@ -5,4 +5,7 @@
 #include "token.h"
 
 #include "expr.h"
+
+void parse(Token *hive_token);
+
 #endif

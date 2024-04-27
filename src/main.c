@@ -5,6 +5,10 @@ int main() {
     Token *tokens = tokenize(input);
 
     showTokens(tokens);
+
+    Node *root = parse(tokens);
+
+    asmGen(root);
     
     return 0;
 }

@@ -4,4 +4,6 @@
 #include "token.h"
 #include "AST.h"
 
+Node *expr(Token **cur);
+
 #endif

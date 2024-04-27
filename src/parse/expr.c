@@ -1,6 +1,6 @@
 #include "expr.h"
 
-#include <stdbool>
+#include <stdbool.h>
 
 bool isOperator(AST_Type type) {
     switch (type){
