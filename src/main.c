@@ -1,7 +1,7 @@
 #include "main.h"
 
 int main() {
-    char *input = "5 - 3 / (2 + 1) * 4";
+    char *input = "5 - (9 * 2 *1) - 2 + 9";
     Token *tokens = tokenize(input);
 
     //showTokens(tokens);

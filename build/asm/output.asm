@@ -1,39 +1,40 @@
 bits 64
-section .text
-global main
 
-main:
-    mov eax, 5
-    push rax
-    mov eax, 3
+section .data
+    fmt:    db "%d", 10, 0
+
+extern printf
+
+section .text
+    global _start
+
+_start:
+    mov eax, 9
     push rax
     mov eax, 2
     push rax
     mov eax, 1
-    pop rbx
-    add eax, ebx
-    pop rbx
-    mov edx, 0
-    idiv ebx
     push rax
-    mov eax, 4
+    mov eax, 2
+    push rax
+    mov eax, 9
     pop rbx
     imul eax, ebx
     pop rbx
+    imul eax, ebx
+    push rax
+    mov eax, 5
+    pop rbx
     sub eax, ebx
+    pop rbx
+    sub eax, ebx
+    pop rbx
+    add eax, ebx
 
-    mov [result], rax
-    mov rax, result
-
-    mov rsi, rax
-    mov rdx, 8
-    mov rdi, 1
-    mov rax, 1
-    syscall
+    mov rdi, fmt
+    mov esi, eax
+    call printf
 
     mov rdi, 0
     mov rax, 60
     syscall
-
-section .data
-result dq 0

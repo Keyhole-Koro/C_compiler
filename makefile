@@ -34,7 +34,7 @@ debug: $(BUILD_DIR)/$(EXECUTABLE)
 	
 asm: $(ASM_BUILD)
 	$(AS) $(ASFLAGS) -o $(ASM_BUILD_DIR)/asm_obj.o $(ASM_BUILD)
-	$(CC) -o $(ASM_BUILD_DIR)/asm_output $(ASM_BUILD_DIR)/asm_obj.o
+	gcc -o $(ASM_BUILD_DIR)/asm_output $(ASM_BUILD_DIR)/asm_obj.o -nostartfiles -no-pie
 	./$(ASM_BUILD_DIR)/asm_output
 
 .PHONY: all clean run asm

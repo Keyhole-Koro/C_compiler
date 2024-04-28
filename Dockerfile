@@ -6,9 +6,11 @@ RUN apt-get update && \
     apt-get install -y \
     make \
     clang \
+    gcc \
     git \
     lld \
     nasm \
+    gdb \
     && rm -rf /var/lib/apt/lists/*
 
 SHELL ["/bin/bash", "-c"]
