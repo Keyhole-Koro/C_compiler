@@ -1,7 +1,6 @@
 bits 64
 
-section .data
-    fmt:    db "%d", 10, 0
+fmt:    db "%d", 10, 0
 
 extern printf
 
@@ -42,7 +41,6 @@ _start:
     sub eax, ebx
     pop rbx
     sub eax, ebx
-
     mov rdi, fmt
     mov esi, eax
     call printf
@@ -50,3 +48,4 @@ _start:
     mov rdi, 0
     mov rax, 60
     syscall
+
