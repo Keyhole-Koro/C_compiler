@@ -11,7 +11,15 @@ section .text
 _start:
     mov eax, 9
     push rax
-    mov eax, 2
+    mov eax, 0
+    push rax
+    mov eax, 9
+    push rax
+    mov eax, -4
+    push rax
+    mov eax, -2
+    pop rbx
+    imul eax, ebx
     push rax
     mov eax, 1
     push rax
@@ -22,14 +30,18 @@ _start:
     imul eax, ebx
     pop rbx
     imul eax, ebx
+    pop rbx
+    imul eax, ebx
     push rax
     mov eax, 5
     pop rbx
     sub eax, ebx
     pop rbx
+    add eax, ebx
+    pop rbx
     sub eax, ebx
     pop rbx
-    add eax, ebx
+    sub eax, ebx
 
     mov rdi, fmt
     mov esi, eax

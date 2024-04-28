@@ -30,17 +30,6 @@ Token *tokenize(char *input) {
       ptr = rest;
       continue;
     }
-
-    if (*ptr == '-') {
-      char *numStr = readWhile(isNumber, ++ptr, &rest);
-      if (strlen(numStr) < 1) cur = createToken(cur, SUB, NULL);
-      else {
-        char sign = '-';
-        cur = createToken(cur, NUMBER, strcat(&sign, numStr));
-      }
-      ptr = rest;
-      continue;
-    }
     
     if (strchr("+-*/;=(){},<>[]&.!?:|^%~#", *ptr)) {
       char char_buf[2] = {*ptr, '\0'};

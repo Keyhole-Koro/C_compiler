@@ -2,7 +2,7 @@
 
 #include <stdbool.h>
 
-Node *functor(Token **cur);
+Node *factor(Token **cur);
 Node *term(Token **cur);
 
 bool isOperator(AST_Type type) {
@@ -17,7 +17,7 @@ bool isOperator(AST_Type type) {
     }
 }
 
-Node *functor(Token **cur) {
+Node *factor(Token **cur) {
     Node *new_node = NULL;
     if ((*cur)->kind == NUMBER) {
         new_node = createNode(AST_NUMBER, (*cur)->value);
@@ -25,14 +25,19 @@ Node *functor(Token **cur) {
     } else if ((*cur)->kind == L_PARENTHESES) {
         *cur = (*cur)->next;
         new_node = expr(cur);
-        if (new_node && isOperator(new_node->type)
-                && (*cur) && (*cur)->kind == R_PARENTHESES) {
+        if ((new_node && isOperator(new_node->type))
+                || ((*cur) && (*cur)->kind == R_PARENTHESES)) {
             *cur = (*cur)->next;
             return new_node;
         } else {
-            DEBUG_PRINT("Nothing inside ()\n");
+            DEBUG_PRINT("Nothing inside () %s\n", revertToken(*cur));
             exit(1);
         }
+    } else if ((*cur)->kind == ADD || (*cur)->kind == SUB) { // Check for unary operators
+        char sign = ((*cur)->kind == ADD) ? '+' : '-';
+        *cur = (*cur)->next;
+        new_node = createNode(AST_NUMBER, strcat(&sign, (*cur)->value));
+        new_node->left = factor(cur); // Process the operand after the unary operator
     } else {
         DEBUG_PRINT("Unexpected token\n");
         exit(1);
@@ -40,19 +45,20 @@ Node *functor(Token **cur) {
     return new_node;
 }
 
+
 Node *term(Token **cur) {
     if (!(*cur)) return NULL;
 
     Node *new_node = NULL;
 
-    new_node = functor(cur);
+    new_node = factor(cur);
 
     while (*cur && ((*cur)->kind == MUL || (*cur)->kind == DIV)) {
         Token *op = *cur;
         *cur = (*cur)->next;
         Node *op_node = createNode((op->kind == MUL) ? AST_MUL : AST_DIV, NULL);
         op_node->left = new_node;
-        op_node->right = functor(cur);
+        op_node->right = factor(cur);
         new_node = op_node;
     }
 
