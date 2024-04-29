@@ -7,11 +7,10 @@ int main() {
     Token *tokens = tokenize(input);
 
     showTokens(tokens);
-    DEBUG_PRINT("a\n");
+
     Node *root = parse(tokens);
-    DEBUG_PRINT("b\n");
+
     printPreorder(root, 0, ' ');
-    DEBUG_PRINT("c\n");
 
     //asmGen(root);
     

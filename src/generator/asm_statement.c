@@ -20,7 +20,7 @@ void stmtGen(Node *root) {
 }
 
 void assignGen(Node *left, Node *right, int offset) {
-    exprGen(right);
+    //exprGen(right);
 
     if (left->type != AST_VARIABLE) {
         DEBUG_PRINT("not identifier");

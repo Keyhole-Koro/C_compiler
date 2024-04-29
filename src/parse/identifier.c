@@ -22,10 +22,11 @@ Node *variableNode(Token **cur, Var *vars) {
         exit(1);
     }
 
+
     Node *var = createStringNode(AST_VARIABLE, variableName);
     var->left = createNaturalNode(AST_VARIABLE_OFFSET, foundVar->offset);
     var->right = typeNode(foundVar->type);
-    
+
     return var;
 }
 
@@ -40,18 +41,13 @@ Node *declareVariableNode(Token **cur, Type *type, Var *vars, int *cur_offset) {
     }
 
 
-    DEBUG_PRINT("111\n");
     Var *registeredVar = registerVar(vars, variableName, type, ((*cur_offset) += type->size));
     // if variable exist duplicated variable, exit(1)
-    DEBUG_PRINT("112\n");
     
     Node *declare = createNode(AST_DECLARE_VAR);
     consume(cur); // data type
 
-
-    DEBUG_PRINT("113\n");
     Node *var = variableNode(cur, registeredVar);
-    DEBUG_PRINT("114\n");
 
     declare->left = var;
     if ((*cur)->kind == ASSIGN) declare->right = assignNode(cur, var);
@@ -76,12 +72,10 @@ Var *registerVar(Var *var, char *name, Type *type, int offset) {
     newVar->offset = offset;
     newVar->next = NULL;
 
-    DEBUG_PRINT("start %s\n", var->name);
-    while (var) {
-        DEBUG_PRINT("next %s\n", var->name);
+    while (var->next) {
         var = var->next;
     }
-    var = newVar;
+    var->next = newVar;
 
     return newVar;
 }
@@ -92,7 +86,8 @@ bool isReservedWord(char *name) {
 
 Var *findVar(Var *vars, char *expectedName) {
     for (Var *cur_var = vars; cur_var; cur_var = cur_var->next) {
-        if (cur_var->name == expectedName) return cur_var;
+        if (!cur_var->name) continue;
+        if (strcmp(cur_var->name, expectedName) == 0) return cur_var;
     }
     return NULL;
 }

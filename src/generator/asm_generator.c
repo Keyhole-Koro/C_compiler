@@ -30,7 +30,7 @@ void start(Node *root) {
     printf("    push rbp\n");
     printf("    mov rbp, rsp\n");
     printf("    sub, 64\n"); // temporary 64
-    stmtGen(root);
+    //stmtGen(root);
 }
 
 void asm_printf() {
