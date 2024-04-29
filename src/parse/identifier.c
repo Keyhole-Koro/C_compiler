@@ -54,13 +54,16 @@ Node *declareVariableNode(Token **cur, Type *type, Var *vars, int *cur_offset) {
     return declare;
 }
 
-Node *assignNode(Token **cur, Node *left) {
+Node *assignNode(Token **cur, Node *var) {
         
     Node *assign = createNode(AST_ASSIGN);
     consume(cur);
 
-    assign->left = left;
-    assign->right = exprNode(cur);
+    Node *expr = createNode(AST_EXPR);
+    expr->left = exprNode(cur);
+
+    assign->left = var;
+    assign->right = expr;
 
     return assign;
 }

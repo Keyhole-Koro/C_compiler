@@ -117,6 +117,6 @@ symbol findTokenKind(char *key);
 char *revertToken(Token *tk);
 
 Token *consume(Token **cur);
-void expect(Token *cur, TokenKind kind);
+void expect(Token *cur, TokenKind kind); // just for debugging
 
 #endif

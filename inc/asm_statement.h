@@ -7,8 +7,8 @@
 
 #include "debug.h"
 
-#include "asm_statement.h"
 #include "asm_expr.h"
+#include "asm_identifier.h"
 
 void stmtGen(Node *root);
 

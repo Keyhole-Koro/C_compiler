@@ -15,6 +15,8 @@ typedef enum {
     AST_MUL,
     AST_DIV,
 
+    AST_EXPR,
+
     AST_STATEMENT,
 
     AST_DECLARE_VAR,

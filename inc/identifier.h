@@ -19,7 +19,7 @@ struct Var {
 };
 
 Node *declareVariableNode(Token **cur, Type *type, Var *vars, int *cur_offset);
-Node *assignNode(Token **cur, Node *left);
+Node *assignNode(Token **cur, Node *var);
 Node *variableNode(Token **cur, Var *vars);
 
 #endif

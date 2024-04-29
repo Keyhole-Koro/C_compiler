@@ -12,9 +12,9 @@ void stmtGen(Node *root) {
     for (Node *stmt = root; stmt; stmt = stmt->right) {
         switch (stmt->type) {
             case AST_DECLARE_VAR:
-                //declareGen();
+                declareGen();
             case AST_ASSIGN:
-                assignGen(stmt->left, stmt->right, offset);
+                assignGen(stmt->left, &offset);
         }
     }
 }

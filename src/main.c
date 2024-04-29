@@ -12,7 +12,7 @@ int main() {
 
     printPreorder(root, 0, ' ');
 
-    //asmGen(root);
+    asmGen(root);
     
     return 0;
 }
