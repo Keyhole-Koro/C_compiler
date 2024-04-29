@@ -36,8 +36,9 @@ void start(Node *root) {
 }
 
 void asm_printf() {
+    printf("    xor rax, rax\n");
     printf("    mov rdi, fmt\n");
-    printf("    mov esi, eax\n");
+    printf("    mov esi, [rbp-4]\n");
     printf("    call printf\n\n");
 }
 

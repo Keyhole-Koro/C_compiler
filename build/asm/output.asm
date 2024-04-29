@@ -25,8 +25,9 @@ _start:
     pop rbx
     add eax, ebx
     mov dword [rbp - 4], eax
+    xor rax, rax
     mov rdi, fmt
-    mov esi, eax
+    mov esi, [rbp-4]
     call printf
 
     mov rdi, 0
