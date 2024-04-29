@@ -1,6 +1,7 @@
 #ifndef TOKEN_H
 #define TOKEN_H
 
+#include "AST.h"
 #include "utils.h"
 
 typedef int symbol;
@@ -44,6 +45,7 @@ typedef enum {
     SHORT,    // short
     UNSIGNED, // unsigned
     SIGNED,   // signed
+    
     CONST,    // const
     STATIC,   // static
     EXTERN,   // extern
@@ -113,5 +115,8 @@ extern struct KeyValue single_char[];
 
 symbol findTokenKind(char *key);
 char *revertToken(Token *tk);
+
+Token *consume(Token **cur);
+void expect(Token *cur, TokenKind kind);
 
 #endif

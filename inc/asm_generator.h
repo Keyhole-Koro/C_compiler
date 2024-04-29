@@ -7,6 +7,9 @@
 
 #include "debug.h"
 
+#include "asm_statement.h"
+#include "asm_expr.h"
+
 void asmGen(Node *root);
 
 #endif

@@ -2,8 +2,8 @@
 
 #include <stdbool.h>
 
-Node *factor(Token **cur);
-Node *term(Token **cur);
+Node *factorNode(Token **cur);
+Node *termNode(Token **cur);
 
 bool isOperator(AST_Type type) {
     switch (type){
@@ -17,27 +17,29 @@ bool isOperator(AST_Type type) {
     }
 }
 
-Node *factor(Token **cur) {
+Node *factorNode(Token **cur) {
     Node *new_node = NULL;
     if ((*cur)->kind == NUMBER) {
-        new_node = createNode(AST_NUMBER, (*cur)->value);
+        new_node = createNaturalNode(AST_NUMBER, atoi((*cur)->value));
         *cur = (*cur)->next;
     } else if ((*cur)->kind == L_PARENTHESES) {
         *cur = (*cur)->next;
-        new_node = expr(cur);
+        new_node = exprNode(cur);
         if ((new_node && isOperator(new_node->type))
                 || ((*cur) && (*cur)->kind == R_PARENTHESES)) {
             *cur = (*cur)->next;
             return new_node;
         } else {
-            DEBUG_PRINT("Nothing inside () %s\n", revertToken(*cur));
+            DEBUG_PRINT("token mismatches\n");
             exit(1);
         }
-    } else if ((*cur)->kind == ADD || (*cur)->kind == SUB) { // Check for unary operators
-        char sign = ((*cur)->kind == ADD) ? '+' : '-';
+    } else if ((*cur)->kind == ADD || (*cur)->kind == SUB) {
+        TokenKind op = (*cur)->kind;
         *cur = (*cur)->next;
-        new_node = createNode(AST_NUMBER, strcat(&sign, (*cur)->value));
-        new_node->left = factor(cur); // Process the operand after the unary operator
+        int number = atoi((*cur)->value);
+        new_node = createNaturalNode(AST_NUMBER, 
+            (op == ADD) ? number : -number);
+        new_node->left = factorNode(cur);
     } else {
         DEBUG_PRINT("Unexpected token\n");
         exit(1);
@@ -46,36 +48,36 @@ Node *factor(Token **cur) {
 }
 
 
-Node *term(Token **cur) {
+Node *termNode(Token **cur) {
     if (!(*cur)) return NULL;
 
     Node *new_node = NULL;
 
-    new_node = factor(cur);
+    new_node = factorNode(cur);
 
     while (*cur && ((*cur)->kind == MUL || (*cur)->kind == DIV)) {
         Token *op = *cur;
         *cur = (*cur)->next;
-        Node *op_node = createNode((op->kind == MUL) ? AST_MUL : AST_DIV, NULL);
+        Node *op_node = createNode((op->kind == MUL) ? AST_MUL : AST_DIV);
         op_node->left = new_node;
-        op_node->right = factor(cur);
+        op_node->right = factorNode(cur);
         new_node = op_node;
     }
 
     return new_node;
 }
 
-Node *expr(Token **cur) {
+Node *exprNode(Token **cur) {
     if (!(*cur)) return NULL;
 
-    Node *new_node = term(cur);
+    Node *new_node = termNode(cur);
 
     while (*cur && ((*cur)->kind == ADD || (*cur)->kind == SUB)) {
         Token *op = *cur;
         *cur = (*cur)->next;
-        Node *op_node = createNode((op->kind == ADD) ? AST_ADD : AST_SUB, NULL);
+        Node *op_node = createNode((op->kind == ADD) ? AST_ADD : AST_SUB);
         op_node->left = new_node;
-        op_node->right = term(cur);
+        op_node->right = termNode(cur);
         new_node = op_node;
     }
 

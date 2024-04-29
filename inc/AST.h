@@ -14,19 +14,48 @@ typedef enum {
     AST_SUB,
     AST_MUL,
     AST_DIV,
+
+    AST_STATEMENT,
+
+    AST_DECLARE_VAR,
+    AST_IDENTIFIER,
+    AST_VARIABLE,
+    AST_VARIABLE_OFFSET,
+    AST_TYPE,
+    AST_TYPE_SIZE,
+
+    AST_ASSIGN,
+
 } AST_Type;
 
-typedef struct Node Node;
+typedef enum {
+    NATURAL_NUMBER,
+    DECIMAL_FRACTION,
+    STRING,
+    NOTHING
+} ValueKind;
 
+typedef union Value Value;
+union Value {
+    char *str;
+    int natural;
+    float decimal;
+};
+
+typedef struct Node Node;
 struct Node{
     AST_Type type;
-    int num;
-    char *val;
+    ValueKind valKind;
+    Value value;
     Node *left;
     Node *right;
-} ;
+};
 
-Node *createNode(AST_Type type, char *val);
+Node *createNode(AST_Type type);
+
+Node *createNaturalNode(AST_Type type, int value);
+Node *createDecimalNode(AST_Type type, float value);
+Node *createStringNode(AST_Type type, char *value);
 
 void printPreorder(struct Node* node, int depth, char branch);
 

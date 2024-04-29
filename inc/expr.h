@@ -6,7 +6,7 @@
 
 #include "debug.h"
 
-Node *expr(Token **cur);
+Node *exprNode(Token **cur);
 
 bool isOperator(AST_Type type);
 

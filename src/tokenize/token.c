@@ -128,3 +128,16 @@ char *revertToken(Token *tk) {
     if (tk->value) return tk->value;
     return NULL;
 }
+
+Token *consume(Token **cur) {
+  Token *tk_buf = *cur;
+  *cur = (*cur)->next;
+  return tk_buf;
+}
+
+void expect(Token *cur, TokenKind kind) {
+  if (cur->kind != kind) {
+    DEBUG_PRINT("Unexpected token %s\n", revertToken(cur));
+    exit(1);
+  }
+}

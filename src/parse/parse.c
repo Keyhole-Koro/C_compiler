@@ -4,12 +4,9 @@ Node *parse(Token *hive_token) {
     Node *root = NULL;
 
     for (Token *cur = hive_token; cur; cur = cur->next) {
-        TokenKind kind = cur->kind;
-
-        if (kind == NUMBER || kind == L_PARENTHESES) {
-            root = expr(&cur);
-        }
-
+        DEBUG_PRINT("1\n");
+        statementNode(&cur); 
+        DEBUG_PRINT("2\n");
     }
 
     return root;
