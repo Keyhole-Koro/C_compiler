@@ -25,6 +25,13 @@ void exprGen(Node *root) {
                 printf("    mov edx, 0\n");
                 printf("    idiv ebx\n");
                 break;
+            case AST_VARIABLE:
+                printf("    mov eax, %s [rbp - %d]\n", getWord(getVarSize(root)), getVarOffset(root));
+                break;
+            case AST_VARIABLE_OFFSET:
+            case AST_TYPE:
+            case AST_TYPE_SIZE:
+                break;
             default:
                 DEBUG_PRINT("Unknown node type\n");
                 break;

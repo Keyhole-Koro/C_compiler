@@ -2,8 +2,17 @@
 
 #include <stdbool.h>
 
+/** 
+    @brief specifies the target variable list
+        to extract the infomation of the variable offset, size, etc
+
+*/
+
+Var *targetLocalVariable = NULL;
+
 Node *factorNode(Token **cur);
 Node *termNode(Token **cur);
+Node *exprNode_(Token **cur);
 
 bool isOperator(AST_Type type) {
     switch (type){
@@ -22,9 +31,12 @@ Node *factorNode(Token **cur) {
     if ((*cur)->kind == NUMBER) {
         new_node = createNaturalNode(AST_NUMBER, atoi((*cur)->value));
         *cur = (*cur)->next;
+    } else if ((*cur)->kind == IDENTIFIER) {
+        DEBUG_PRINT("IDENTIFIER\n");
+        new_node = variableNode(cur, targetLocalVariable);
     } else if ((*cur)->kind == L_PARENTHESES) {
         *cur = (*cur)->next;
-        new_node = exprNode(cur);
+        new_node = exprNode_(cur);
         if ((new_node && isOperator(new_node->type))
                 || ((*cur) && (*cur)->kind == R_PARENTHESES)) {
             *cur = (*cur)->next;
@@ -67,7 +79,7 @@ Node *termNode(Token **cur) {
     return new_node;
 }
 
-Node *exprNode(Token **cur) {
+Node *exprNode_(Token **cur) {
     if (!(*cur)) return NULL;
 
     Node *new_node = termNode(cur);
@@ -82,4 +94,9 @@ Node *exprNode(Token **cur) {
     }
 
     return new_node;
+}
+
+Node *exprNode(Token **cur, Var *targetVar) {
+    targetLocalVariable = targetVar;
+    return exprNode_(cur);
 }

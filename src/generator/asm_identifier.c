@@ -16,26 +16,9 @@ void assignGen(Node *assign) {
 
     exprGen(expr->left);
 
-    int offset = var->left->value.natural;
-    Node *type = var->right;
-
-    int size = type->left->value.natural;
-    char *word = NULL;
-    
-    switch (size) {
-        case 2:
-            word = "word";
-            break;
-        case 4:
-            word = "dword";
-            break;
-        case 8:
-            word = "qword";
-            break;
-        default:
-            DEBUG_PRINT("out of size");
-            exit(1);
-    }
+    int offset = getVarOffset(var);
+        
+    char *word = getWord(getVarSize(var));
 
     printf("    mov %s [rbp - %d], eax\n", word, offset);
 }

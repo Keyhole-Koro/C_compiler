@@ -8,6 +8,7 @@ bool isReservedWord(char *name);
 
 Node *variableNode(Token **cur, Var *vars) {
     expect(*cur, IDENTIFIER);
+
     Token *idtfr = consume(cur);
 
     char *variableName = idtfr->value;
@@ -21,7 +22,6 @@ Node *variableNode(Token **cur, Var *vars) {
         DEBUG_PRINT("this variable has not defined\n");
         exit(1);
     }
-
 
     Node *var = createStringNode(AST_VARIABLE, variableName);
     var->left = createNaturalNode(AST_VARIABLE_OFFSET, foundVar->offset);
@@ -47,50 +47,27 @@ Node *declareVariableNode(Token **cur, Type *type, Var *vars, int *cur_offset) {
     Node *declare = createNode(AST_DECLARE_VAR);
     consume(cur); // data type
 
-    Node *var = variableNode(cur, registeredVar);
+    Node *var_node = variableNode(cur, registeredVar);
 
-    declare->left = var;
-    if ((*cur)->kind == ASSIGN) declare->right = assignNode(cur, var);
+    declare->left = var_node;
+    if ((*cur)->kind == ASSIGN) declare->right = assignNode(cur, var_node, vars);
     return declare;
 }
 
-Node *assignNode(Token **cur, Node *var) {
+Node *assignNode(Token **cur, Node *var_node, Var *vars) {
         
     Node *assign = createNode(AST_ASSIGN);
     consume(cur);
 
     Node *expr = createNode(AST_EXPR);
-    expr->left = exprNode(cur);
+    expr->left = exprNode(cur, vars);
 
-    assign->left = var;
+    assign->left = var_node;
     assign->right = expr;
 
     return assign;
 }
 
-Var *registerVar(Var *var, char *name, Type *type, int offset) {
-    Var *newVar = malloc(sizeof(Var));
-    newVar->name = name;
-    newVar->type = type;
-    newVar->offset = offset;
-    newVar->next = NULL;
-
-    while (var->next) {
-        var = var->next;
-    }
-    var->next = newVar;
-
-    return newVar;
-}
-
 bool isReservedWord(char *name) {
     return false;//temporary
-}
-
-Var *findVar(Var *vars, char *expectedName) {
-    for (Var *cur_var = vars; cur_var; cur_var = cur_var->next) {
-        if (!cur_var->name) continue;
-        if (strcmp(cur_var->name, expectedName) == 0) return cur_var;
-    }
-    return NULL;
 }

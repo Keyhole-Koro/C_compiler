@@ -19,9 +19,33 @@ _start:
     mov dword [rbp - 4], eax
     mov eax, 2
     mov dword [rbp - 8], eax
-    mov eax, 3
+    mov eax, 2
+    push rax
+    push rax
+    push rax
+    pop rbx
+    pop rbx
+    push rax
+    push rax
+    pop rbx
+    pop rbx
+    mov eax, dword [rbp - 8]
+    pop rbx
+    imul eax, ebx
+    push rax
+    push rax
+    push rax
+    pop rbx
+    pop rbx
+    push rax
+    push rax
+    pop rbx
+    pop rbx
+    mov eax, dword [rbp - 8]
     push rax
     mov eax, 9
+    pop rbx
+    add eax, ebx
     pop rbx
     add eax, ebx
     mov dword [rbp - 4], eax

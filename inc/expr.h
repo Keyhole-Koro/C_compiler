@@ -4,9 +4,11 @@
 #include "token.h"
 #include "AST.h"
 
+#include "identifier.h"
+
 #include "debug.h"
 
-Node *exprNode(Token **cur);
+Node *exprNode(Token **cur, Var *targetVar);
 
 bool isOperator(AST_Type type);
 

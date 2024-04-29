@@ -3,7 +3,7 @@
 int main() {
     char *input = "int a = 1 - 3;\
                     int b = 2;\
-                    a = 9 + 3;";
+                    a = 9 + b + b * 2;";
     Token *tokens = tokenize(input);
 
     showTokens(tokens);
