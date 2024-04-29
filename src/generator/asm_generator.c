@@ -1,5 +1,6 @@
-#include <stdio.h>
 #include "asm_generator.h"
+
+#include <stdio.h>
 
 void asm_config();
 void start(Node *root);
@@ -7,7 +8,7 @@ void asm_printf();
 void returnSuccess();
 
 #define ASM_HEADER "bits 64\n\n"
-#define PRINT_FORMAT "fmt:    db \"%%d\", 10, 0\n\n"
+#define PRINT_FORMAT "    fmt:    db \"%%d\", 10, 0\n\n"
 #define EXTERN_PRINTF "extern printf\n\n"
 
 void asmGen(Node *root) {
@@ -19,6 +20,7 @@ void asmGen(Node *root) {
 
 void asm_config() {
     printf(ASM_HEADER);
+    printf("section .data\n");
     printf(PRINT_FORMAT);
     printf(EXTERN_PRINTF);
     printf("section .text\n");
@@ -29,8 +31,8 @@ void start(Node *root) {
     printf("_start:\n");
     printf("    push rbp\n");
     printf("    mov rbp, rsp\n");
-    printf("    sub, 64\n"); // temporary 64
-    //stmtGen(root);
+    //printf("    sub, rsp, 64\n"); // temporary 64
+    stmtGen(root);
 }
 
 void asm_printf() {

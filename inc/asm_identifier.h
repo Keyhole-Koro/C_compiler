@@ -4,5 +4,9 @@
 #include "AST.h"
 
 #include "debug.h"
+#include "asm_expr.h"
+
+void assignGen(Node *assign);
+void declareGen(Node *declare);
 
 #endif
