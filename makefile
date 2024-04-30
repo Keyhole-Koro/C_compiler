@@ -31,9 +31,11 @@ $(ASM_BUILD): $(BUILD_DIR)/$(EXECUTABLE)
 
 debug: $(BUILD_DIR)/$(EXECUTABLE)
 	./$(BUILD_DIR)/$(EXECUTABLE)
+	gdb '/workspaces/C_compiler/build/asm/asm_output'
+
 	
 asm: $(ASM_BUILD)
-	$(AS) $(ASFLAGS) -o $(ASM_BUILD_DIR)/asm_obj.o $(ASM_BUILD)
+	$(AS) $(ASFLAGS) -o $(ASM_BUILD_DIR)/asm_obj.o $(ASM_BUILD) 
 	gcc -o $(ASM_BUILD_DIR)/asm_output $(ASM_BUILD_DIR)/asm_obj.o -nostartfiles -no-pie
 	./$(ASM_BUILD_DIR)/asm_output
 

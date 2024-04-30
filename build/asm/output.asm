@@ -11,6 +11,7 @@ section .text
 _start:
     push rbp
     mov rbp, rsp
+    sub rsp, 8
     mov eax, 3
     push rax
     mov eax, 1
@@ -49,9 +50,10 @@ _start:
     pop rbx
     add eax, ebx
     mov dword [rbp - 4], eax
+
     xor rax, rax
     mov rdi, fmt
-    mov esi, [rbp-4]
+    mov esi, [rbp - 4]
     call printf
 
     mov rdi, 0

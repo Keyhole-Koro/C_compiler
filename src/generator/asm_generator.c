@@ -24,26 +24,30 @@ void asm_config() {
     printf(PRINT_FORMAT);
     printf(EXTERN_PRINTF);
     printf("section .text\n");
-    printf("    global _start\n\n");
+    printf("    global _start\n");
+    printf("\n");
 }
 
 void start(Node *root) {
     printf("_start:\n");
     printf("    push rbp\n");
     printf("    mov rbp, rsp\n");
-    //printf("    sub, rsp, 64\n"); // temporary 64
+    printf("    sub rsp, 8\n"); // temporary 64
     stmtGen(root);
+    printf("\n");
 }
 
 void asm_printf() {
     printf("    xor rax, rax\n");
     printf("    mov rdi, fmt\n");
-    printf("    mov esi, [rbp-4]\n");
-    printf("    call printf\n\n");
+    printf("    mov esi, [rbp - 4]\n");
+    printf("    call printf\n");
+    printf("\n");
 }
 
 void returnSuccess() {
     printf("    mov rdi, 0\n");
     printf("    mov rax, 60\n");
-    printf("    syscall\n\n");
+    printf("    syscall\n");
+    printf("\n");
 }

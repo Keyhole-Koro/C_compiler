@@ -54,6 +54,7 @@ Node *declareVariableNode(Token **cur, Type *type, Var *vars, int *cur_offset) {
     return declare;
 }
 
+
 Node *assignNode(Token **cur, Node *var_node, Var *vars) {
         
     Node *assign = createNode(AST_ASSIGN);

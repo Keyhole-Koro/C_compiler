@@ -5,6 +5,7 @@
 #include "AST.h"
 
 #include "identifier.h"
+#include "variable.h"
 
 #include "debug.h"
 
