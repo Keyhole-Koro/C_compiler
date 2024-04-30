@@ -1,5 +1,6 @@
 #include "asm_utils.h"
 
+char *asm_byte = "byte";
 char *asm_word = "word";
 char *asm_dword = "dword";
 char *asm_qword = "qword";
@@ -14,6 +15,8 @@ void expectNode(Node *node, AST_Type expectedType) {
 
 char *getWord(int size) {
     switch (size) {
+        case 1:
+            return asm_byte;
         case 2:
             return asm_word;
         case 4:

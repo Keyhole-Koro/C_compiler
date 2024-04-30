@@ -32,7 +32,7 @@ void start(Node *root) {
     printf("_start:\n");
     printf("    push rbp\n");
     printf("    mov rbp, rsp\n");
-    printf("    sub rsp, 8\n"); // temporary 64
+    printf("    sub rsp, 8\n");
     stmtGen(root);
     printf("\n");
 }

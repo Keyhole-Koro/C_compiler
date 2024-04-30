@@ -6,7 +6,7 @@ LD = lld
 CFLAGS = -Wall -Wextra -std=c99
 LDFLAGS = -fuse-ld=$(LD)
 EXECUTABLE = output
-SRC = $(wildcard ./src/*.c) $(wildcard ./src/**/*.c)
+SRC = $(wildcard ./src/*.c) $(wildcard ./src/**/*.c) $(wildcard ./src/**/**/*.c)
 INCLUDE_DIR = ./inc
 BUILD_DIR = ./build
 
@@ -31,7 +31,7 @@ $(ASM_BUILD): $(BUILD_DIR)/$(EXECUTABLE)
 
 debug: $(BUILD_DIR)/$(EXECUTABLE)
 	./$(BUILD_DIR)/$(EXECUTABLE)
-	gdb '/workspaces/C_compiler/build/asm/asm_output'
+	#gdb '/workspaces/C_compiler/build/asm/asm_output'
 
 	
 asm: $(ASM_BUILD)

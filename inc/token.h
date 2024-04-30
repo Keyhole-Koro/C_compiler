@@ -117,6 +117,14 @@ symbol findTokenKind(char *key);
 char *revertToken(Token *tk);
 
 Token *consume(Token **cur);
-void expect(Token *cur, TokenKind kind); // just for debugging
 
+TokenKind getKind(Token *tk);
+
+#define expect(tk, kind) \
+  do { \
+    if (getKind(tk) != (kind)) { \
+      DEBUG_PRINT("Unexpected token %s\n", revertToken(tk)); \
+      exit(1); \
+    } \
+  } while (0)
 #endif

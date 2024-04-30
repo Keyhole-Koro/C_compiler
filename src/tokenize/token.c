@@ -135,9 +135,6 @@ Token *consume(Token **cur) {
   return tk_buf;
 }
 
-void expect(Token *cur, TokenKind kind) {
-  if (cur->kind != kind) {
-    DEBUG_PRINT("Unexpected token %s\n", revertToken(cur));
-    exit(1);
-  }
+TokenKind getKind(Token *tk) {
+  return tk->kind;
 }

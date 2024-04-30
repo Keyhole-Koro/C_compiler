@@ -40,7 +40,6 @@ Node *declareVariableNode(Token **cur, Type *type, Var *vars, int *cur_offset) {
         exit(1);
     }
 
-
     Var *registeredVar = registerVar(vars, variableName, type, ((*cur_offset) += type->size));
     // if variable exist duplicated variable, exit(1)
     
@@ -50,6 +49,15 @@ Node *declareVariableNode(Token **cur, Type *type, Var *vars, int *cur_offset) {
     Node *var_node = variableNode(cur, registeredVar);
 
     declare->left = var_node;
+
+    return declare;
+}
+
+// assign if neccesary
+Node *declareAssignVariableNode(Token **cur, Type *type, Var *vars, int *cur_offset) {
+    Node *declare = declareVariableNode(cur, type, vars, cur_offset);
+
+    Node *var_node = declare->left;
     if ((*cur)->kind == ASSIGN) declare->right = assignNode(cur, var_node, vars);
     return declare;
 }

@@ -9,6 +9,6 @@
 #include "identifier.h"
 #include "type.h"
 
-Node *statementNode(Token **cur);
+Node *statementNode(Token **cur, int *cur_offset, Var *vars);
 
 #endif

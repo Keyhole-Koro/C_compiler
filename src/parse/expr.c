@@ -1,4 +1,7 @@
 #include "expr.h"
+// defined in function.c
+Node *callFunctionNode(Token **cur, Var *vars);
+
 
 #include <stdbool.h>
 
@@ -27,13 +30,17 @@ bool isOperator(AST_Type type) {
 }
 
 Node *factorNode(Token **cur) {
+
     Node *new_node = NULL;
     if ((*cur)->kind == NUMBER) {
         new_node = createNaturalNode(AST_NUMBER, atoi((*cur)->value));
         *cur = (*cur)->next;
     } else if ((*cur)->kind == IDENTIFIER) {
-        DEBUG_PRINT("IDENTIFIER\n");
-        new_node = variableNode(cur, targetLocalVariable);
+        if ((*cur)->next->kind == L_PARENTHESES) {
+            new_node = callFunctionNode(cur, targetLocalVariable);
+        } else {
+            new_node = variableNode(cur, targetLocalVariable);
+        }
     } else if ((*cur)->kind == L_PARENTHESES) {
         *cur = (*cur)->next;
         new_node = exprNode_(cur);
@@ -53,7 +60,7 @@ Node *factorNode(Token **cur) {
             (op == ADD) ? number : -number);
         new_node->left = factorNode(cur);
     } else {
-        DEBUG_PRINT("Unexpected token\n");
+        DEBUG_PRINT("Unexpected token [%s]\n", revertToken(*cur));
         exit(1);
     }
     return new_node;

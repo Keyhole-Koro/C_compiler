@@ -17,7 +17,14 @@ typedef enum {
 
     AST_EXPR,
 
-    AST_STATEMENT,
+    AST_PROGRAM,
+
+    AST_FUNCTION,
+    AST_FUNCTION_DETAILS,
+    AST_PARAMETER,
+    AST_RETURN,
+    AST_CALL_FUNC,
+    AST_CALL_FUNC_PARAM,
 
     AST_DECLARE_VAR,
     AST_IDENTIFIER,
@@ -25,8 +32,9 @@ typedef enum {
     AST_VARIABLE_OFFSET,
     AST_TYPE,
     AST_TYPE_SIZE,
-
     AST_ASSIGN,
+
+    AST_STATEMENT,
 
 } AST_Type;
 

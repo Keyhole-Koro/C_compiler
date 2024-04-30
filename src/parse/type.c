@@ -2,6 +2,8 @@
 
 Type type_int = (Type){"int", 4};
 
+Type type_void = (Type){"void", 0};
+
 Type *isType(Token *tk) {
     Type *found = NULL;
     switch (tk->kind) {
