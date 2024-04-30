@@ -3,7 +3,6 @@
 #include <stdio.h>
 
 void asm_config();
-void start(Node *root);
 void asm_printf();
 void returnSuccess();
 
@@ -13,7 +12,15 @@ void returnSuccess();
 
 void asmGen(Node *root) {
     asm_config();
-    start(root);
+    
+    while (root) {
+        if (root->type == AST_PROGRAM) funcGen(root->left);
+        else {
+            DEBUG_PRINT("not ast program\n");
+            exit(1);
+        }
+    } 
+
     asm_printf();
     returnSuccess();
 }
@@ -25,15 +32,6 @@ void asm_config() {
     printf(EXTERN_PRINTF);
     printf("section .text\n");
     printf("    global _start\n");
-    printf("\n");
-}
-
-void start(Node *root) {
-    printf("_start:\n");
-    printf("    push rbp\n");
-    printf("    mov rbp, rsp\n");
-    printf("    sub rsp, 8\n");
-    stmtGen(root);
     printf("\n");
 }
 

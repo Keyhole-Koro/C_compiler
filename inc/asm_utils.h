@@ -17,6 +17,14 @@ extern char *asm_word;
 extern char *asm_dword;
 extern char *asm_qword;
 
+extern char *asm_di;
+extern char *asm_si;
+extern char *asm_dx;
+extern char *asm_cx;
+
+extern char *asm_r8;
+extern char *asm_r9;
+
 char *getWord(int size);
 
 int getVarSize(Node *var);

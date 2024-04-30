@@ -11,6 +11,7 @@ Func *findFunc(char *expectedName);
 Node *callFunctionNode(Token **cur, Var *vars);
 Node *callFuncParametersNode(Token **cur, Var *vars);
 
+char *main_start = "_start";
 
 Node *functionNode(Token **cur) {
     Var *localVars = calloc(1, sizeof(Var));
@@ -33,7 +34,8 @@ Node *functionNode(Token **cur) {
 
     registerFunc(functionName, type);
 
-    Node *function = createStringNode(AST_FUNCTION, functionName);
+    Node *function = createStringNode(AST_FUNCTION,
+                (strcmp(functionName, "main") == 0)) ? main_start : functionName;
     Node *func_details = createNode(AST_FUNCTION_DETAILS);
 
     expect(*cur, L_PARENTHESES);
@@ -53,9 +55,13 @@ Node *functionNode(Token **cur) {
     // statementNode doesn't consume RETURN
     function->right = statementNode(cur, &offset, localVars); 
 
+    Node *result = createNode(AST_FUNCTION_RESULT);
+
     if (strcmp(type->name, "void") != 0) {
-        func_details->left = returnNode(cur, localVars);
+        result->right = returnNode(cur, localVars);
     }
+
+    result->left = createNaturalNode(AST_STACK_FRAME_SIZE, offset);
 
     expect(*cur, R_BRACE);
     consume(cur);
