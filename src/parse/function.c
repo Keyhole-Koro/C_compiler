@@ -60,6 +60,8 @@ Node *functionNode(Token **cur) {
     expect(*cur, R_BRACE);
     consume(cur);
 
+    DEBUG_PRINT("%p\n", function);
+
     return function;
 }
 
@@ -115,6 +117,7 @@ Func *registerFunc(char *name, Type *type) {
 }
 
 Func *findFunc(char *expectedName) {
+
     for (Func *cur_func = head_functions; cur_func; cur_func = cur_func->next) {
         if (!cur_func->name) continue;
         if (strcmp(cur_func->name, expectedName) == 0) return cur_func;
@@ -125,12 +128,20 @@ Func *findFunc(char *expectedName) {
 Node *callFunctionNode(Token **cur, Var *vars) {
     expect(*cur, IDENTIFIER);
     char *calledfuncName = (*cur)->value;
-    Func *calledFunc = findFunc(calledfuncName);
+
+    Func *calledFunc;
+    if (!(calledFunc = findFunc(calledfuncName))) {
+        DEBUG_PRINT("the target function not found [%s]\n", calledfuncName);
+        exit(1);
+    }
 
     Node *callFunc = createStringNode(AST_CALL_FUNC, calledfuncName);
     
     consume(cur);
 
+    // take this line carefully when you add syntax error handler
+    // if calledFunc was not found, pass this part otherwise, segmentation fault
+    // calledFunc->type
     callFunc->left = typeNode(calledFunc->type);
     expect(*cur, L_PARENTHESES);
     consume(cur);

@@ -7,8 +7,8 @@ Node *parse(Token *hive_token) {
     Token *cur = hive_token;
     while (cur && cur->kind != EOT) {
         root->left = functionNode(&cur);
+        root->right = createNode(AST_PROGRAM);
         root = root->right;
-        root = createNode(AST_PROGRAM);
     }
 
     return hive;

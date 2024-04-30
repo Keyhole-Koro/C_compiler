@@ -24,6 +24,9 @@ Node *variableNode(Token **cur, Var *vars) {
     }
 
     Node *var = createStringNode(AST_VARIABLE, variableName);
+    // take this line carefully when you add syntax error handler
+    // if foundVar was not found, pass this part otherwise, segmentation fault
+    // foundVar->type
     var->left = createNaturalNode(AST_VARIABLE_OFFSET, foundVar->offset);
     var->right = typeNode(foundVar->type);
 
@@ -59,6 +62,7 @@ Node *declareAssignVariableNode(Token **cur, Type *type, Var *vars, int *cur_off
 
     Node *var_node = declare->left;
     if ((*cur)->kind == ASSIGN) declare->right = assignNode(cur, var_node, vars);
+
     return declare;
 }
 

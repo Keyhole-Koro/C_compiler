@@ -1,5 +1,7 @@
 #include "main.h"
 
+
+
 int main() {
     char *input = "int add(int param1, int param2) {\
                         int result = param1 + param2;\
@@ -18,7 +20,7 @@ int main() {
 
     Node *root = parse(tokens);
 
-    DEBUG_PRINT("%p\n", root);
+    DEBUG_PRINT("%p %p\n", root->left, root->right);
 
     printPreorder(root, 0, ' ');
 

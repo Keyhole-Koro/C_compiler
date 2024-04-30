@@ -22,6 +22,10 @@ Node *createStringNode(AST_Type type, char *value) {
 
 Node *createNode(AST_Type type) {
     Node *newNode = calloc(1, sizeof(Node));
+    if (newNode == NULL) {
+        DEBUG_PRINT("failed to allocate\n");
+        exit(1);
+    }
     newNode->type = type;
     newNode->valKind = NOTHING;
     return newNode;
@@ -29,6 +33,10 @@ Node *createNode(AST_Type type) {
 
 Node *createNode_(AST_Type type, ValueKind valKind, Value value) {
     Node *newNode = calloc(1, sizeof(Node));
+    if (newNode == NULL) {
+        DEBUG_PRINT("failed to allocate\n");
+        exit(1);
+    }
     newNode->type = type;
     newNode->valKind = valKind;
     newNode->value = value;
@@ -36,8 +44,7 @@ Node *createNode_(AST_Type type, ValueKind valKind, Value value) {
 }
 
 void printPreorder(Node* node, int depth, char branch) {
-    if (node == NULL)
-        return;
+    if (node == NULL) return;
     
     switch (node->valKind) {
         case NATURAL_NUMBER:

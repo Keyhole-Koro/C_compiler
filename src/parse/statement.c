@@ -17,7 +17,6 @@ Node *statementNode(Token **cur, int *cur_offset, Var *vars) {
     } else if ((*cur)->kind == IDENTIFIER) {
         // i = 0
         if ((*cur)->next->kind == ASSIGN) stmt->left = assignNode(cur, variableNode(cur, vars), vars);
-     
     }
 
     expect(*cur, SEMICOLON);

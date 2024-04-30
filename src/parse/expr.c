@@ -41,6 +41,7 @@ Node *factorNode(Token **cur) {
         } else {
             new_node = variableNode(cur, targetLocalVariable);
         }
+
     } else if ((*cur)->kind == L_PARENTHESES) {
         *cur = (*cur)->next;
         new_node = exprNode_(cur);
