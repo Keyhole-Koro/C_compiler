@@ -14,10 +14,11 @@ Node *logicalExprNode(Token **cur, Var *vars) {
 
 // '(' expr ')'
 Node *condtionalExprNode(Token **cur, Var *vars) {
+    Node *condi = NULL;
     if ((*cur)->kind == L_PARENTHESES) {
         consume(cur);
 
-        Node *condi = condtionalExprNode(cur, vars);
+        condi = condtionalExprNode(cur, vars);
         
         if ((*cur)->kind != R_PARENTHESES) {
             error("Expected ')' after expression inside '('");
@@ -25,22 +26,21 @@ Node *condtionalExprNode(Token **cur, Var *vars) {
         }
         consume(cur);
 
-        return condi;
     } else {
         Node *expr = exprNode(cur, vars);
-        Node *condi = cmpOperatorNode(cur);
+        condi = cmpOperatorNode(cur);
         condi->left = expr;
         condi->right = exprNode(cur, vars);
-
-        Node *logi = NULL;
-        if (isLogicalOperator(*cur)) {
-            logi = logicalExprNode(cur, vars);
-            logi->left = condi;
-            logi->right = condtionalExprNode(cur, vars);
-            return logi;
-        } else {
-            return condi;
-        }
+    }
+    
+    if (isLogicalOperator(*cur)) {
+        Node *logi = NULL;  
+        logi = logicalExprNode(cur, vars);
+        logi->left = condi;
+        logi->right = condtionalExprNode(cur, vars);
+        return logi;
+    } else {
+        return condi;
     }
 }
 
