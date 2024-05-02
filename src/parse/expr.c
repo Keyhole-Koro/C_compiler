@@ -52,8 +52,6 @@ Node *factorNode(Token **cur) {
                 || ((*cur) && (*cur)->kind == R_PARENTHESES)) {
             *cur = (*cur)->next;
             return new_node;
-        } else if (isCmpOperatorNode(*cur)) {
-            return new_node;
         } else {
             DEBUG_PRINT("token mismatches %s\n", revertToken(*cur));
             exit(1);

@@ -8,6 +8,7 @@
 
 #include "type.h"
 #include "expr.h"
+#include "conditional_expr.h"
 
 Node *ifNode(Token **cur, int *cur_offset, Var *vars);
 
