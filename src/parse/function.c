@@ -1,17 +1,15 @@
 #include "function.h"
 
-Func func = {NULL, NULL, NULL};
+Func func = {NULL, NULL, NULL, NULL};
 Func *head_functions = &func;
 
 Node *parameterNode(Token **cur, int *cur_offset, Var *vars);
-Node *returnNode(Token **cur, Var *vars);
+Node *returnNode(Token **cur, Var *vars, Type *type);
 
-Func *registerFunc(char *name, Type *type);
+Func *registerFunc(char *name, Type *type, Node *func_details);
 Func *findFunc(char *expectedName);
 Node *callFunctionNode(Token **cur, Var *vars);
-Node *callFuncParametersNode(Token **cur, Var *vars);
-
-char *main_start = "_start";
+Node *argNode(Token **cur, Var *vars);
 
 Node *functionNode(Token **cur) {
     Var *localVars = calloc(1, sizeof(Var));
@@ -32,12 +30,11 @@ Node *functionNode(Token **cur) {
     Token *func_idtfr = consume(cur);
     char *functionName = func_idtfr->value;
 
-    registerFunc(functionName, type);
-
-    Node *function = createStringNode(AST_FUNCTION,
-                (strcmp(functionName, "main") == 0)) ? main_start : functionName;
+    Node *function = createStringNode(AST_FUNCTION, functionName);
     Node *func_details = createNode(AST_FUNCTION_DETAILS);
 
+    registerFunc(functionName, type, func_details);
+    
     expect(*cur, L_PARENTHESES);
     consume(cur);
 
@@ -57,16 +54,16 @@ Node *functionNode(Token **cur) {
 
     Node *result = createNode(AST_FUNCTION_RESULT);
 
+    func_details->left = result;
+
     if (strcmp(type->name, "void") != 0) {
-        result->right = returnNode(cur, localVars);
+        result->right = returnNode(cur, localVars, type);
     }
 
     result->left = createNaturalNode(AST_STACK_FRAME_SIZE, offset);
 
     expect(*cur, R_BRACE);
     consume(cur);
-
-    DEBUG_PRINT("%p\n", function);
 
     return function;
 }
@@ -96,20 +93,22 @@ Node *parameterNode(Token **cur, int *cur_offset, Var *vars) {
     return param;
 }
 
-Node *returnNode(Token **cur, Var *vars) {
+Node *returnNode(Token **cur, Var *vars, Type *type) {
     Node *return_node = createNode(AST_RETURN);
     expect(*cur, RETURN);
     consume(cur);
     return_node->left = exprNode(cur, vars);
+    return_node->right = typeNode(type);
     expect(*cur, SEMICOLON);
     consume(cur);
     return return_node;
 }
 
-Func *registerFunc(char *name, Type *type) {
+Func *registerFunc(char *name, Type *type, Node *func_details) {
     Func *newFunc = malloc(sizeof(Func));
     newFunc->name = name;
     newFunc->type = type;
+    newFunc->func_details = func_details;
     newFunc->next = NULL;
 
     Func *func = head_functions;
@@ -148,10 +147,10 @@ Node *callFunctionNode(Token **cur, Var *vars) {
     // take this line carefully when you add syntax error handler
     // if calledFunc was not found, pass this part otherwise, segmentation fault
     // calledFunc->type
-    callFunc->left = typeNode(calledFunc->type);
+    callFunc->left = calledFunc->func_details;
     expect(*cur, L_PARENTHESES);
     consume(cur);
-    callFunc->right = callFuncParametersNode(cur, vars);
+    callFunc->right = argNode(cur, vars);
 
     expect(*cur, R_PARENTHESES);
     consume(cur);
@@ -159,12 +158,12 @@ Node *callFunctionNode(Token **cur, Var *vars) {
     return callFunc;
 }
 
-Node *callFuncParametersNode(Token **cur, Var *vars) {
+Node *argNode(Token **cur, Var *vars) {
     if ((*cur)->kind == R_PARENTHESES) return NULL;
     expect(*cur, IDENTIFIER);
     char *variableName = (*cur)->value;
 
-    Node *param = createStringNode(AST_CALL_FUNC_PARAM, variableName);
+    Node *param = createStringNode(AST_ARG, variableName);
 
     if ((*cur)->next->kind == L_PARENTHESES) {
         param->left = callFunctionNode(cur, vars);
@@ -176,7 +175,7 @@ Node *callFuncParametersNode(Token **cur, Var *vars) {
      
     expect(*cur, COMMA);
     consume(cur);
-    param->right = callFuncParametersNode(cur, vars);
+    param->right = argNode(cur, vars);
     
     return param;
 }

@@ -66,3 +66,7 @@ void printPreorder(Node* node, int depth, char branch) {
 
     printPreorder(node->right, depth + 1, '`');
 }
+
+int getNodeType(Node *node) {
+    return node->type;
+}

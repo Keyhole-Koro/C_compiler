@@ -1,7 +1,24 @@
 #include "asm_expr.h"
 
+// deined in asm_funciton.c
+void callFuncGen(Node *callFunc);
+
+
 void exprGen(Node *root) {
     if (!root) return;
+
+    switch (root->type) {
+        case AST_ADD:
+        case AST_SUB:
+        case AST_MUL:
+        case AST_DIV:
+        case AST_NUMBER:
+        case AST_VARIABLE:
+        case AST_CALL_FUNC:
+            break;
+        default:
+            return;
+    }
 
     if (root->type == AST_NUMBER) {
         printf("    mov eax, %d\n", root->value.natural);
@@ -28,13 +45,13 @@ void exprGen(Node *root) {
             case AST_VARIABLE:
                 printf("    mov eax, %s [rbp - %d]\n", getWord(getVarSize(root)), getVarOffset(root));
                 break;
-            case AST_VARIABLE_OFFSET:
-            case AST_TYPE:
-            case AST_TYPE_SIZE:
+            case AST_CALL_FUNC:
+                callFuncGen(root);
                 break;
             default:
-                DEBUG_PRINT("Unknown node type\n");
+                DEBUG_PRINT("Unexpected Type [%d]\n", root->type);
                 break;
         }
     }
 }
+

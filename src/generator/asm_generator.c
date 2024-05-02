@@ -3,7 +3,7 @@
 #include <stdio.h>
 
 void asm_config();
-void asm_printf();
+
 void returnSuccess();
 
 #define ASM_HEADER "bits 64\n\n"
@@ -13,16 +13,11 @@ void returnSuccess();
 void asmGen(Node *root) {
     asm_config();
     
-    while (root) {
-        if (root->type == AST_PROGRAM) funcGen(root->left);
-        else {
-            DEBUG_PRINT("not ast program\n");
-            exit(1);
-        }
+    while (root && root->type == AST_PROGRAM) {
+        if (root->left 
+            && root->left->type == AST_FUNCTION) funcGen(root->left);
+        root = root->right;
     } 
-
-    asm_printf();
-    returnSuccess();
 }
 
 void asm_config() {
@@ -32,20 +27,5 @@ void asm_config() {
     printf(EXTERN_PRINTF);
     printf("section .text\n");
     printf("    global _start\n");
-    printf("\n");
-}
-
-void asm_printf() {
-    printf("    xor rax, rax\n");
-    printf("    mov rdi, fmt\n");
-    printf("    mov esi, [rbp - 4]\n");
-    printf("    call printf\n");
-    printf("\n");
-}
-
-void returnSuccess() {
-    printf("    mov rdi, 0\n");
-    printf("    mov rax, 60\n");
-    printf("    syscall\n");
     printf("\n");
 }

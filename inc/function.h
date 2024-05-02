@@ -17,6 +17,7 @@ typedef struct Func Func;
 struct Func {
     char *name;
     Type *type;
+    Node *func_details;
     Func *next;
 };
 

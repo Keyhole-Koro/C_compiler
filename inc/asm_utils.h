@@ -30,6 +30,18 @@ char *getWord(int size);
 int getVarSize(Node *var);
 int getVarOffset(Node *var);
 
+Node *getFuncType(Node *func_details);
+
+char *getParamRegister(int nth, int size);
+
+#define expectNode(node, expectedType) \
+    do { \
+        if ((node)->type != (expectedType)) { \
+            DEBUG_PRINT("Unexpected Node\n"); \
+            exit(1); \
+        } \
+    } while(0)
+
 /*
 RDI: 1
 RSI: 2

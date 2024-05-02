@@ -21,10 +21,13 @@ typedef enum {
 
     AST_FUNCTION,
     AST_FUNCTION_DETAILS,
+    AST_FUNCTION_RESULT,
     AST_PARAMETER,
     AST_RETURN,
+    AST_RETURN_SIZE,
     AST_CALL_FUNC,
     AST_CALL_FUNC_PARAM,
+    AST_ARG,
 
     AST_STACK_FRAME_SIZE,
 
@@ -68,6 +71,8 @@ Node *createNode(AST_Type type);
 Node *createNaturalNode(AST_Type type, int value);
 Node *createDecimalNode(AST_Type type, float value);
 Node *createStringNode(AST_Type type, char *value);
+
+int getNodeType(Node *node);
 
 void printPreorder(struct Node* node, int depth, char branch);
 

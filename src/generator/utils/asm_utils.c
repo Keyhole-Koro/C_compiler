@@ -5,20 +5,13 @@ char *asm_word = "word";
 char *asm_dword = "dword";
 char *asm_qword = "qword";
 
-char *asm_di = "di";
-char *asm_si = "si";
-char *asm_dx = "dx";
-char *asm_cx = "cx";
+char *asm_di = "rdi\0edi\0di";
+char *asm_si = "rsi\0esi\0si";
+char *asm_dx = "rdx\0edx\0dx";
+char *asm_cx = "rcx\0ecx\0cx";
 char *asm_r8 = "r8";
 char *asm_r9 = "r9";
 
-// for debugging make this macro later
-void expectNode(Node *node, AST_Type expectedType) {
-    if (node->type != expectedType) {
-        DEBUG_PRINT("Unexpected Node");
-        exit(1);
-    }
-}
 
 char *getWord(int size) {
     switch (size) {
@@ -52,51 +45,51 @@ char *getParamRegister(int nth, int size) {
         exit(1);
     }
 
-    char *suffix = NULL;
+    char *regi = NULL;
     switch (nth) {
         case 1:
-            suffix = asm_di;
+            regi = asm_di;
             break;
         case 2:
-            suffix = asm_si;
+            regi = asm_si;
             break;
         case 3:
-            suffix = asm_dx;
+            regi = asm_dx;
             break;
         case 4:
-            suffix = asm_cx;
+            regi = asm_cx;
             break;
         case 5:
-            return r8;
+            return asm_r8;
         case 6:
-            return r9;
+            return asm_r9;
         default:
             DEBUG_PRINT("out of size\n");
             exit(1);
     }
 
-    char *prefix = NULL;
-    char *combined = NULL;
     switch (size) {
         case 1:
             DEBUG_PRINT("hasnt prepared yet\n");
             exit(1);
         case 2:
-            return suffix;
+            return regi + 4;
         case 4:
-            prefix = "e";
-            break;
+            return regi + 4;
         case 8:
-            prefix = "r";
-            break;
+            return regi;
         default:
             DEBUG_PRINT("out of size");
             exit(1);
     }
 
-    combined = malloc(strlen(prefix) + strlen(suffix));
-    strcpy(combined, prefix);
-    strcat(combined, suffix);
+    return NULL;
+}
 
-    return combined;
+Node *getFuncType(Node *func_details) {
+    expectNode(func_details, AST_FUNCTION_DETAILS);
+
+    Node *result = func_details->left;
+    Node *type = result->right->right;
+    return type;
 }
