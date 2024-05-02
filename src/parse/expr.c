@@ -2,6 +2,9 @@
 // defined in function.c
 Node *callFunctionNode(Token **cur, Var *vars);
 
+// defined in expr.c
+bool isCmpOperatorNode(Token *cur);
+
 
 #include <stdbool.h>
 
@@ -49,8 +52,10 @@ Node *factorNode(Token **cur) {
                 || ((*cur) && (*cur)->kind == R_PARENTHESES)) {
             *cur = (*cur)->next;
             return new_node;
+        } else if (isCmpOperatorNode(*cur)) {
+            return new_node;
         } else {
-            DEBUG_PRINT("token mismatches\n");
+            DEBUG_PRINT("token mismatches %s\n", revertToken(*cur));
             exit(1);
         }
     } else if ((*cur)->kind == ADD || (*cur)->kind == SUB) {

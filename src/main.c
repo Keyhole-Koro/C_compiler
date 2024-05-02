@@ -10,7 +10,12 @@ int main() {
                     int main() {\
                         int a = - 9;\
                         int b = 2;\
-                        int c = add(a, b);\
+                        int c = 3;\
+                        if (a > b || (b <= a && a == b)) {\
+                           c = add(a, b);\
+                        } else {\
+                            c = 1;\
+                        }\
                         return 0;}";
 
     Token *tokens = tokenize(input);
@@ -19,9 +24,9 @@ int main() {
 
     Node *root = parse(tokens);
 
-    //printPreorder(root, 0, ' ');
+    printPreorder(root, 0, ' ');
 
-    asmGen(root);
+    //asmGen(root);
     
     return 0;
 }

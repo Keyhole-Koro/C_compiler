@@ -30,8 +30,24 @@ Token *tokenize(char *input) {
       ptr = rest;
       continue;
     }
-    
-    if (strchr("+-*/;=(){},<>[]&.!?:|^%~#", *ptr)) {
+
+    if (!isAlphabet_Num_Underbar(ptr)) {
+      char *str = readWhile(isNOTAlphabet_Num_Underbar, ptr, &rest);
+      int i = strlen(str);
+      // find until the target char is found unless the length target is less than 0
+      for (; i > 1; i--) {
+        TokenKind kind = findTokenKind(str);
+        if (kind != (TokenKind)-1) {
+          cur = createToken(cur, kind, str);
+          ptr += i;
+          break;
+        }
+        str[i - 1] = '\0';
+      }
+      if (i != 1) continue;
+    }
+
+    if (strchr("+-*/;=<>(){},[].!?:|^%~#", *ptr)) {
       char char_buf[2] = {*ptr, '\0'};
       TokenKind kind = findTokenKind(char_buf);
       cur = createToken(cur, kind, NULL);
@@ -55,16 +71,10 @@ Token *tokenize(char *input) {
       ptr = rest;
       continue;
     }
+
+    DEBUG_PRINT("%s\n", ptr);
     
-    if (!isAlphabet_Num_Underbar(ptr)) {
-      char *str = readWhile(isNOTAlphabet_Num_Underbar, ptr, &rest);
-      TokenKind kind = findTokenKind(str);
-      cur = createToken(cur, IDENTIFIER, str);
-      ptr = rest;
-      continue;
-      
-    }
-    error("token kind not found");
+    error("token kind not found\n");
     ptr++;
   }
 
