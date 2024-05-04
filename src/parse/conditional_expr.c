@@ -1,13 +1,13 @@
 #include "conditional_expr.h"
 
-Node *cmpOperatorNode(Token **cur);
-Node *logicalExprNode(Token **cur, Var *vars);
+Node *comparisionOperatorNode(Token **cur);
+Node *logicalOperatorNode(Token **cur, Var *vars);
 
-bool isLogicalOperatorInExpr(Token *cur);
 bool isLogicalOperator(Token *tk);
+bool isLogicalOperatorInExpr(Token *cur);
 
 // && ||
-Node *logicalExprNode(Token **cur, Var *vars) {
+Node *logicalOperatorNode(Token **cur, Var *vars) {
     consume(cur);
     return createNode(((*cur)->kind == AND) ? AST_AND : AST_OR);
 }
@@ -21,21 +21,21 @@ Node *condtionalExprNode(Token **cur, Var *vars) {
         condi = condtionalExprNode(cur, vars);
         
         if ((*cur)->kind != R_PARENTHESES) {
-            error("Expected ')' after expression inside '('");
+            error("Missing )");
             exit(1);
         }
         consume(cur);
 
     } else {
         Node *expr = exprNode(cur, vars);
-        condi = cmpOperatorNode(cur);
+        condi = comparisionOperatorNode(cur);
         condi->left = expr;
         condi->right = exprNode(cur, vars);
     }
-    
+
     if (isLogicalOperator(*cur)) {
         Node *logi = NULL;  
-        logi = logicalExprNode(cur, vars);
+        logi = logicalOperatorNode(cur, vars);
         logi->left = condi;
         logi->right = condtionalExprNode(cur, vars);
         return logi;
@@ -44,8 +44,7 @@ Node *condtionalExprNode(Token **cur, Var *vars) {
     }
 }
 
-
-Node *cmpOperatorNode(Token **cur) {
+Node *comparisionOperatorNode(Token **cur) {
 
     AST_Type type = -1;
     switch ((*cur)->kind) {

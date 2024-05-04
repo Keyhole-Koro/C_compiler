@@ -11,10 +11,12 @@ int main() {
                         int a = - 9;\
                         int b = 2;\
                         int c = 3;\
-                        if ((a > b) || ((b <= a) &&( a == b))) {\
+                        if (((b <= a) &&( a == b) || ((a > b)))) {\
                            c = add(a, b);\
-                        } else {\
+                        } else if (a >= b) {\
                             c = 1;\
+                        } else {\
+                            c = 9;\
                         }\
                         return 0;}";
 

@@ -12,27 +12,11 @@
 
 */
 
-extern char *asm_byte;
-extern char *asm_word;
-extern char *asm_dword;
-extern char *asm_qword;
-
-extern char *asm_di;
-extern char *asm_si;
-extern char *asm_dx;
-extern char *asm_cx;
-
-extern char *asm_r8;
-extern char *asm_r9;
-
-char *getWord(int size);
 
 int getVarSize(Node *var);
 int getVarOffset(Node *var);
 
 Node *getFuncType(Node *func_details);
-
-char *getParamRegister(int nth, int size);
 
 #define expectNode(node, expectedType) \
     do { \
@@ -83,4 +67,21 @@ when receiving arguments
 4bytes
 "mov "
 */
+
+/*
+AST_EQ je
+AST_NEQ jne
+
+a above
+b below
+
+g greater
+l less
+        unsigned    signed
+AST_LT  jnae jb     jnge jl
+AST_GT  ja   jnbe   jg   jnle
+AST_LTE jna jnb     jge  jnl
+AST_GTE jae jbe     jng  jle
+*/
+
 #endif
