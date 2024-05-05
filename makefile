@@ -30,7 +30,7 @@ $(ASM_BUILD): $(BUILD_DIR)/$(EXECUTABLE)
 	./$(BUILD_DIR)/$(EXECUTABLE) > $(ASM_BUILD)
 
 debug: $(BUILD_DIR)/$(EXECUTABLE)
-	./$(BUILD_DIR)/$(EXECUTABLE)
+	gdb ./$(BUILD_DIR)/$(EXECUTABLE)
 	#gdb '/workspaces/C_compiler/build/asm/asm_output'
 
 	

@@ -10,8 +10,8 @@ int main() {
                     int main() {\
                         int a = - 9;\
                         int b = 2;\
-                        int c = 3;\
-                        if ((a >= b || b <= a) && a == b) {\
+                        int c = 4;\
+                        if (c > a) {\
                            c = add(a, b);\
                         } else if (a >= c) {\
                             c = 1;\

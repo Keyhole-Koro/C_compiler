@@ -11,7 +11,7 @@ section .text
 add:
     push rbp
     mov rbp, rsp
-    sub rsp, 12
+    sub rsp, 24
     mov dword [rbp - 4], edi
     mov dword [rbp - 8], esi
     push rax
@@ -27,53 +27,32 @@ add:
     push rax
     pop rbx
     mov eax, dword [rbp - 12]
-    add rsp, 12
+    add rsp, 24
     pop rbp
     ret
 
 _start:
     push rbp
     mov rbp, rsp
-    sub rsp, 12
+    sub rsp, 24
     mov eax, -9
     mov dword [rbp - 4], eax
     mov eax, 2
     mov dword [rbp - 8], eax
-    mov eax, 3
+    mov eax, 4
     mov dword [rbp - 12], eax
     jmp .BRANCH.0
 
 .BRANCH.0:
     push rax
     pop rbx
-    mov eax, dword [rbp - 4]
-    mov ecx, eax
-    push rax
-    pop rbx
-    mov eax, dword [rbp - 8]
-    cmp ecx, eax
-    jge .RELAY.0
-    push rax
-    pop rbx
-    mov eax, dword [rbp - 8]
+    mov eax, dword [rbp - 12]
     mov ecx, eax
     push rax
     pop rbx
     mov eax, dword [rbp - 4]
     cmp ecx, eax
-    jng .RELAY.0
-    jmp .BRANCH.FALSE.0
-
-.RELAY.0:
-    push rax
-    pop rbx
-    mov eax, dword [rbp - 4]
-    mov ecx, eax
-    push rax
-    pop rbx
-    mov eax, dword [rbp - 8]
-    cmp ecx, eax
-    je .BRANCH.TRUE.0
+    jg .BRANCH.TRUE.0
     jmp .BRANCH.FALSE.0
 
 .BRANCH.TRUE.0:
@@ -108,8 +87,13 @@ _start:
     jmp .CONT.0
 
 .CONT.0:
+    xor rax, rax
+    mov rdi, fmt
+    mov esi, dword [rbp - 12]
+    call printf
+
     mov eax, 0
-    add rsp, 12
+    add rsp, 24
     pop rbp
     mov rax, 60
     xor rdi, rdi

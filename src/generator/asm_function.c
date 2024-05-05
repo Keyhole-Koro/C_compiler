@@ -15,10 +15,12 @@ char *main_start = "_start";
 
 void returnSuccess();
 
+int findNearestMod16(int num);
+
 void funcGen(Node *func) {
     expectNode(func, AST_FUNCTION);
 
-    int frame_size = getStackFrameSize(func);
+    int frame_size = findNearestMod16(getStackFrameSize(func)) + 8;
 
     char *functionName = func->value.str;
     printf("%s:\n", (strcmp(functionName, "main") == 0) ? main_start : functionName);
@@ -34,13 +36,16 @@ void funcGen(Node *func) {
 
     stmtGen(stmt);
 
-    /*
-    printf("    xor rax, rax\n");
-    printf("    mov rdi, fmt\n");
-    printf("    mov esi, dword [rbp - 12]\n");
-    printf("    call printf\n");
-    printf("\n");
-    */
+    
+    if (strcmp(functionName, "main") == 0) {
+        printf("    xor rax, rax\n");
+        printf("    mov rdi, fmt\n");
+        printf("    mov esi, dword [rbp - 12]\n");
+        printf("    call printf\n");
+        printf("\n");
+    }
+
+    
 
     returnGen(func);
    
@@ -200,4 +205,22 @@ void returnSuccess() {
     printf("    xor rdi, rdi\n");
     printf("    syscall\n");
     printf("\n");
+}
+
+int isMultipleOf16(int num) {
+    return (num % 16) == 0;
+}
+
+int adjustToMod16(int num) {
+    return num + (16 - (num % 16)) % 16;
+}
+
+int findNearestMod16(int num) {
+    if (isMultipleOf16(num + 1)) {
+        return num + 1;
+    } else {
+        int adjusted_num = adjustToMod16(num + 1);
+        int adjusted_num_prev = adjustToMod16(num);
+        return (adjusted_num - num) < (num - adjusted_num_prev) ? adjusted_num : adjusted_num_prev;
+    }
 }
