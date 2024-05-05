@@ -1,30 +1,51 @@
 #include "asm_if.h"
 
+// defined in statement.c
+void stmtGen(Node *root);
+
 /**
     https://www.philadelphia.edu.jo/academics/qhamarsheh/uploads/Lecture%2018%20Conditional%20Jumps%20Instructions.pdf
 */
 
+void ifGen_(Node *if_node, Label *ifBranch, Label *outOfIfBlock);
 
-void ifGen(Node *if_node, Var *vars) {
-    Label *trueBranch = makeBranchLabel();
-    Label *falseBranch = makeBranchLabel();
 
-    Node *next = cur->right;
+void ifGen(Node *if_node) {
+    Label *ifBranch = makeBranchLabel();
+    Label *outOfIfBlock = makeContLabel();
+    jumpTo(ifBranch);
+    ifGen_(if_node, ifBranch, outOfIfBlock);
+}
 
-    if (next->type == AST_ELSE_IF || next->type == AST_ELSE) {
-        startLabel(trueBranch);
-        conditional_stmtGen(cur->left, trueBranch);
-        startLabel(falseBranch);
-        ifGen(next, vars);
+void ifGen_(Node *if_node, Label *ifBranch, Label *outOfIfBlock) {
 
-    } else {
+    Label *trueBranch = makeTrueBranchLabel();
+    Label *falseBranch = makeFalseBranchLabel();
+
+    Node *next = if_node->right;
+
+    if (if_node->type == AST_ELSE) {
         /**
             @brief when branch closes just after `if` or `else if`
         */
-        conditional_stmtGen(cur->left, trueBranch);
-        jumpTo(outOfBlock);
-    }
+        //conditionGen(if_node->left, trueBranch, falseBranch);
+        startLabel(ifBranch);
+        stmtGen(if_node->left->right);
+        jumpTo(outOfIfBlock);
 
-    startLabel(trueBranch);
-    stmtGen(cur->left->right);
+        startLabel(outOfIfBlock);
+
+    } else if (next->type == AST_ELSE_IF || next->type == AST_ELSE) {
+        
+        startLabel(ifBranch);
+        conditionGen(if_node->left, trueBranch, falseBranch);
+        jumpTo(falseBranch);
+        
+        startLabel(trueBranch);
+        stmtGen(if_node->left->right);
+        jumpTo(outOfIfBlock);
+
+        ifGen_(next, falseBranch, outOfIfBlock);
+    }    
+
 }

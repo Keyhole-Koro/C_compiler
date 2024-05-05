@@ -11,9 +11,9 @@ int main() {
                         int a = - 9;\
                         int b = 2;\
                         int c = 3;\
-                        if (((b <= a) &&( a == b) || ((a > b)))) {\
+                        if ((a >= b || b <= a) && a == b) {\
                            c = add(a, b);\
-                        } else if (a >= b) {\
+                        } else if (a >= c) {\
                             c = 1;\
                         } else {\
                             c = 9;\
@@ -26,9 +26,9 @@ int main() {
 
     Node *root = parse(tokens);
 
-    printPreorder(root, 0, ' ');
+    //printPreorder(root, 0, ' ');
 
-    //asmGen(root);
+    asmGen(root);
     
     return 0;
 }

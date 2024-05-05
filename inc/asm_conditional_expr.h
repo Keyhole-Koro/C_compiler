@@ -7,11 +7,14 @@
 
 #include "debug.h"
 
+#include "asm_utils.h"
+#include "asm_instruction.h"
+
 #include "variable.h"
+#include "asm_label.h"
+#include "asm_expr.h"
 
-void conditional_exprGen(Node *condi, Var *vars);
+void conditionGen(Node *condi_stmt, Label *trueBranch, Label *falseBranch);
 
-bool isLogicalOperator(Node *node);
-bool isCmparisionOperatorNode(Node *node);
 
 #endif

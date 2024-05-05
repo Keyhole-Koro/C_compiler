@@ -44,6 +44,7 @@ typedef enum {
     AST_IF,
     AST_ELSE_IF,
     AST_ELSE,
+    AST_CONDITION,
     AST_CONDITIONAL_STATEMTNT,
     AST_EQ,       // ==
     AST_NEQ,      // !=
@@ -52,7 +53,7 @@ typedef enum {
     AST_LTE,      // <=
     AST_GTE,      // >=
     AST_AND,      // &&
-    AST_OR, 
+    AST_OR,       // ||
 
 } AST_Type;
 

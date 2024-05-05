@@ -34,11 +34,13 @@ void funcGen(Node *func) {
 
     stmtGen(stmt);
 
+    /*
     printf("    xor rax, rax\n");
     printf("    mov rdi, fmt\n");
     printf("    mov esi, dword [rbp - 12]\n");
     printf("    call printf\n");
     printf("\n");
+    */
 
     returnGen(func);
    
@@ -180,8 +182,6 @@ void argGen(Node *arg, int nth_arg) {
     if (!arg) return;
 
     expectNode(arg, AST_ARG);
-
-    DEBUG_PRINT("arg left %d %d %d\n", arg->left->type, AST_VARIABLE, AST_CALL_FUNC);
 
     if (arg->left->type == AST_VARIABLE || arg->left->type == AST_NUMBER) {
 

@@ -83,6 +83,10 @@ char *asm_jae = "jae";
 
 char *getJumpInstruct_unsigned(Node *node) {
     switch (node->type) {
+        case AST_EQ:
+            return asm_je;
+        case AST_NEQ:
+            return asm_jne;
         case AST_LT: 
             return asm_jnae;
         case AST_GT:
@@ -98,23 +102,29 @@ char *getJumpInstruct_unsigned(Node *node) {
     
 }
 
+char *asm_je = "je";
+char *asm_jne = "jne";
 char *asm_jnge = "jnge";
 char *asm_jg = "jg";
-char *asm_jge = "jge";
 char *asm_jng = "jng";
+char *asm_jge = "jge";
 
 char *getJumpInstruct_signed(Node *node) {
     switch (node->type) {
+        case AST_EQ:
+            return asm_je;
+        case AST_NEQ:
+            return asm_jne;
         case AST_LT: 
             return asm_jnge;
         case AST_GT:
             return asm_jg;
         case AST_LTE:
-            return asm_jge;
-        case AST_GTE:
             return asm_jng;
+        case AST_GTE:
+            return asm_jge;
         default:
-            DEBUG_PRINT("Unexpected node");
+            DEBUG_PRINT("Unexpected node%d %d", node->type, AST_EQ);
             exit(1);
     }
     

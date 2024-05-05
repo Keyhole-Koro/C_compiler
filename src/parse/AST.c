@@ -43,9 +43,13 @@ Node *createNode_(AST_Type type, ValueKind valKind, Value value) {
     return newNode;
 }
 
+#include <string.h> // Include string.h for strcpy
+
+char str_buf[20];
+
 void printPreorder(Node* node, int depth, char branch) {
     if (node == NULL) return;
-    
+        
     switch (node->valKind) {
         case NATURAL_NUMBER:
             DEBUG_PRINT("%*s%c-- %d\n", depth * 4, "", branch, node->value.natural);
@@ -57,7 +61,36 @@ void printPreorder(Node* node, int depth, char branch) {
             DEBUG_PRINT("%*s%c-- %s\n", depth * 4, "", branch, node->value.str);
             break;
         default:
-            DEBUG_PRINT("%*s%c-- \n", depth * 4, "", branch);
+            switch (node->type) {
+                case AST_AND:
+                    strcpy(str_buf, "&&");
+                    break;
+                case AST_OR:
+                    strcpy(str_buf, "||");
+                    break;
+                case AST_EQ:
+                    strcpy(str_buf, "==");
+                    break;
+                case AST_NEQ:
+                    strcpy(str_buf, "!=");
+                    break;
+                case AST_GT:
+                    strcpy(str_buf, ">");
+                    break;
+                case AST_GTE:
+                    strcpy(str_buf, ">=");
+                    break;
+                case AST_LT:
+                    strcpy(str_buf, "<");
+                    break;
+                case AST_LTE:
+                    strcpy(str_buf, "<=");
+                    break;
+                default:
+                    strcpy(str_buf, "_");
+                    break;
+            }
+            DEBUG_PRINT("%*s%c-- %s\n", depth * 4, "", branch, str_buf);
             break;
     }
 

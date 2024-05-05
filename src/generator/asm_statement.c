@@ -20,8 +20,12 @@ void stmtGen(Node *root) {
                 break;
             case AST_CALL_FUNC:
                 callFuncGen(stmt->left);
+                break;
+            case AST_IF:
+                ifGen(stmt->left);
+                break;
             default:
-                DEBUG_PRINT("out of definition\n");
+                DEBUG_PRINT("out of definition %d\n", stmt->left->type);
                 break;
         }
     }

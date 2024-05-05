@@ -1,79 +1,84 @@
 #include "asm_conditional_expr.h"
 
-void conditional_stmtGen(Node *condi_stmt, Label *trueBranch) {
-    expect(condi_stmt, AST_CONDITIONAL_STATEMTNT);
+#include "asm_conditional_expr.h"
 
+void conditoinalExprGen(Node *condi_stmt, Label *trueBranch, Label *falseBranch);
+
+Label *logicalOperationGen(Node *logi, Label *trueBranch, Label *falseBranch);
+void comparisionGen(Node *cmp, Label *trueBranch);
+bool isTypeLogicalOperator(Node *node);
+bool isTypeCmparisionOperator(Node *node);
+
+void conditionGen(Node *condi_stmt, Label *trueBranch, Label *falseBranch) {
+    expectNode(condi_stmt, AST_CONDITIONAL_STATEMTNT);
+    
     Node *condition = condi_stmt->left;
-    expect(condition, AST_CONDITION);
 
-    conditional_exprGen(condition, trueBranch);
+    conditoinalExprGen(condition, trueBranch, falseBranch);
 }
 
-void conditional_exprGen(Node *condi, Var *vars, Label *trueBranch) {
-    if (isLogicalOperator(condi)) {
-        logicalOperationGen(condi, trueBranch);
-    } else if (isCmparisionOperatorNode(condi)) {
-        comparisionGen(condi, trueBranch);
+void conditoinalExprGen(Node *condition, Label *trueBranch, Label *falseBranch) {
+    
+    if (isTypeLogicalOperator(condition)) {
+        trueBranch = logicalOperationGen(condition, trueBranch, falseBranch);
+    } else if (isTypeCmparisionOperator(condition)) {
+        comparisionGen(condition, trueBranch);
+
     } else {
-        DEBUG_PRINT("Unsupported\n");
+        DEBUG_PRINT("Unexpected node\n");
         exit(1);
     }
 }
 
-Label *logicalOperationGen(Node *logi, Label *trueBranch) {
-    if (isLogicalOperator(logi->left)) {
-        trueBranch = logicalOperationGen(logi->left, trueBranch);
+Label *logicalOperationGen(Node *logi, Label *trueBranch, Label *falseBranch) {
+
+    if (logi->type == AST_AND)
+    { 
+        Label *relayBranch = makeRelayLabel();
+        conditoinalExprGen(logi->left, relayBranch, falseBranch);
+        jumpTo(falseBranch);
+        startLabel(relayBranch);
+        conditoinalExprGen(logi->right, trueBranch, falseBranch);
     }
-    if (isLogicalOperator(logi->right)) {
-        logicalOperationGen(logi->right, trueBranch);
+    else if (logi->type == AST_OR) {
+        conditoinalExprGen(logi->left, trueBranch, falseBranch);
+        conditoinalExprGen(logi->right, trueBranch, falseBranch);
     }
-
-    if (logi->type == AST_AND) {
-            Label *relayBranch = makeBranchLabel();
-            comparisionGen(logi->left, relayBranch, AST_AND);
-            comparisionGen(logi->right, trueBranch, AST_AND);
-            return relayBranch;
-
-    } else if (logi->type == AST_OR) {
-            comparisionGen(logi->left, trueBranch, AST_OR);
-            comparisionGen(logi->right, trueBranch, AST_OR);
-            return trueBranch;
-
-    } else {
+    else {
         DEBUG_PRINT("Unsupported\n");
         exit(1);
     }
+    
+
+    return trueBranch;
 }
 
-void comparisionGen(Node *cmp, Label *trueBranch, AST_Type type) {
+void comparisionGen(Node *cmp, Label *trueBranch) {
     exprGen(cmp->left);
-    printf("   mov ecx, eax\n");
+    printf("    mov ecx, eax\n");
     exprGen(cmp->right);
-    printf("   cmp ecx, eax\n");
-    if (type == AST_AND) {
-        printf("   %s %s\n", getJumpInstruct_signed(cmp), branch->name);
-        jumpTo();
-    }
+    printf("    cmp ecx, eax\n");
+    printf("    %s %s\n", getJumpInstruct_signed(cmp), trueBranch->name);
 }
 
-bool isLogicalOperator(Node *node) {
+bool isTypeLogicalOperator(Node *node) {
     switch (node->type) {
-        case AND:
-        case OR:
+        case AST_AND:
+        case AST_OR:
             return true;
         default:
             return false;
     }
 }
 
-bool isCmparisionOperatorNode(Node *node) {
+bool isTypeCmparisionOperator(Node *node) {
     switch (node->type) {
-        case EQ:
-        case NEQ:
-        case LT:
-        case LTE:
-        case GT:
-        case GTE:
+        case AST_EQ:
+        case AST_NEQ:
+        case AST_LT:
+        case AST_LTE:
+        case AST_GT:
+        case AST_GTE:
             return true;
         default:
             return false;

@@ -8,8 +8,21 @@ bool isLogicalOperatorInExpr(Token *cur);
 
 // && ||
 Node *logicalOperatorNode(Token **cur, Var *vars) {
+
+    Node *logi = NULL;
+    switch ((*cur)->kind) {
+        case AND:
+            logi = createNode(AST_AND);
+            break;
+        case OR:
+            logi = createNode(AST_OR);
+            break;
+        default:
+            DEBUG_PRINT("Unexpected node\n");
+            exit(1);
+    }
     consume(cur);
-    return createNode(((*cur)->kind == AND) ? AST_AND : AST_OR);
+    return logi;
 }
 
 // '(' expr ')'

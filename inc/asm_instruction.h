@@ -1,6 +1,10 @@
 #ifndef ASM_INSTRUCTION_H
 #define ASM_INSTRUCTION_H
 
+#include "AST.h"
+
+#include "debug.h"
+
 extern char *asm_byte;
 extern char *asm_word;
 extern char *asm_dword;
@@ -14,6 +18,8 @@ extern char *asm_cx;
 extern char *asm_r8;
 extern char *asm_r9;
 
+extern char *asm_je;
+extern char *asm_jne;
 extern char *asm_jnae;
 extern char *asm_ja;
 extern char *asm_jna;

@@ -7,6 +7,7 @@
 
 #include "debug.h"
 #include "asm_utils.h"
+#include "asm_instruction.h"
 
 #include "asm_expr.h"
 #include "asm_statement.h"

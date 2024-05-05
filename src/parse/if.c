@@ -40,7 +40,6 @@ Node *ifNode(Token **cur, int *cur_offset, Var *vars) {
         expect(*cur, R_PARENTHESES);
         consume(cur);
     }
-    DEBUG_PRINT("%s\n", revertToken((*cur)->next));
     // support a line stmt later
     expect(*cur, L_BRACE);
     consume(cur);
