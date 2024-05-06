@@ -75,7 +75,7 @@ struct KeyValue single_char[] = {
   {"^", BITXOR},
   {"~", BITNOT},
   {"#", HASH},
-  {"&", BITAND},
+  {"&", AMPERSAND},
 };
 
 const int size_single_char = sizeof(single_char) / sizeof(single_char[0]);

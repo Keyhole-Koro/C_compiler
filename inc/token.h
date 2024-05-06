@@ -22,7 +22,8 @@ typedef enum {
     AND,      // &&
     OR,       // ||
     NOT,      // !
-    BITAND,   // &
+    AMPERSAND,
+    //BITAND,   // &
     BITOR,    // |
     BITXOR,   // ^
     BITNOT,   // ~

@@ -10,6 +10,8 @@
 #include "asm_utils.h"
 #include "debug.h"
 
+#include "pointer.h"
+
 void exprGen(Node *root);
 
 #endif

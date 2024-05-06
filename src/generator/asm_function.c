@@ -40,7 +40,7 @@ void funcGen(Node *func) {
     if (strcmp(functionName, "main") == 0) {
         printf("    xor rax, rax\n");
         printf("    mov rdi, fmt\n");
-        printf("    mov esi, dword [rbp - 12]\n");
+        printf("    mov esi, dword [rbp - 36]\n");
         printf("    call printf\n");
         printf("\n");
     }
@@ -73,6 +73,12 @@ Node *getReturnNode(Node *func) {
     Node *func_details = func->left;
     Node *result = func_details->left;
     return result->right;
+}
+
+int getReturnSize(Node *func) {
+    Node *return_node = getReturnNode(func);
+    Node *type = return_node->right;
+    return type->left->value.natural;
 }
 
 void paramGen(Node *params) {

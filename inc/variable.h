@@ -3,11 +3,14 @@
 
 #include "type.h"
 
+#include "pointer.h"
+
 typedef struct Var Var;
 
 struct Var {
     char *name;
     Type *type;
+    int num_deferenceOp;
     int offset;
     Var *next;
 };

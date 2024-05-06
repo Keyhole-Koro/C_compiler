@@ -10,6 +10,8 @@ extern char *asm_word;
 extern char *asm_dword;
 extern char *asm_qword;
 
+extern char *asm_ax;
+
 extern char *asm_di;
 extern char *asm_si;
 extern char *asm_dx;
@@ -31,6 +33,7 @@ extern char *asm_jng;
 
 char *getWord(int size);
 char *getParamRegister(int nth, int size);
+char *getAXRegister(int size);
 
 char *getJumpInstruct_unsigned(Node *node);
 char *getJumpInstruct_signed(Node *node);

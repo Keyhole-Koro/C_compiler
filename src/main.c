@@ -9,9 +9,13 @@ int main() {
                     }\
                     int main() {\
                         int a = - 9;\
-                        int b = 2;\
-                        int c = 4;\
-                        if (c > a) {\
+                        int b = - 10;\
+                        int c = -11;\
+                        int *d = &a;\
+                        int e = *d;\
+                        int **f = &d;\
+                        int g = **f;\
+                        if ((c >= a) && (a != c)) {\
                            c = add(a, b);\
                         } else if (a >= c) {\
                             c = 1;\

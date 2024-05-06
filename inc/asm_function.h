@@ -16,4 +16,6 @@ void funcGen(Node *root);
 
 void callFuncGen(Node *callFunc);
 
+int getReturnSize(Node *func);
+
 #endif

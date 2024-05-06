@@ -8,7 +8,6 @@ bool isReservedWord(char *name);
 
 Node *variableNode(Token **cur, Var *vars) {
     expect(*cur, IDENTIFIER);
-
     Token *idtfr = consume(cur);
 
     char *variableName = idtfr->value;
@@ -34,9 +33,22 @@ Node *variableNode(Token **cur, Var *vars) {
 }
 
 Node *declareVariableNode(Token **cur, Type *type, Var *vars, int *cur_offset) {
+    if (!isType(*cur)
+        && !((*cur)->kind == IDENTIFIER)) {
+        DEBUG_PRINT("Unexpected token\n");
+        exit(1);
+    }
+
+    Node *declare = createNode(AST_DECLARE_VAR);
+    consume(cur); // data type
+
+    Node *pointer = pointerOperatorNode(cur);
+
+    if (pointer && getNumPointer(pointer) > 0) type->size = 8;
+ 
     /** @brief avoid deplicates*/
-    expect((*cur)->next, IDENTIFIER);
-    char *variableName = (*cur)->next->value;
+    expect(*cur, IDENTIFIER);
+    char *variableName = (*cur)->value;
     // consider dunctions' identifiers later
     if (findVar(vars, variableName)) {
         DEBUG_PRINT("duplicate identifier\n");
@@ -46,11 +58,12 @@ Node *declareVariableNode(Token **cur, Type *type, Var *vars, int *cur_offset) {
     Var *registeredVar = registerVar(vars, variableName, type, ((*cur_offset) += type->size));
     // if variable exist duplicated variable, exit(1)
     
-    Node *declare = createNode(AST_DECLARE_VAR);
-    consume(cur); // data type
-
     Node *var_node = variableNode(cur, registeredVar);
 
+    
+    Node *type_node = var_node->right;
+    if (pointer) type_node->right = pointer;
+    
     declare->left = var_node;
 
     return declare;
@@ -68,7 +81,6 @@ Node *declareAssignVariableNode(Token **cur, Type *type, Var *vars, int *cur_off
 
 
 Node *assignNode(Token **cur, Node *var_node, Var *vars) {
-        
     Node *assign = createNode(AST_ASSIGN);
     consume(cur);
 
@@ -82,5 +94,5 @@ Node *assignNode(Token **cur, Node *var_node, Var *vars) {
 }
 
 bool isReservedWord(char *name) {
-    return false;//temporary
+    return false; //temporary
 }

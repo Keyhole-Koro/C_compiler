@@ -1,7 +1,5 @@
 #include "asm_conditional_expr.h"
 
-#include "asm_conditional_expr.h"
-
 void conditoinalExprGen(Node *condi_stmt, Label *trueBranch, Label *falseBranch);
 
 Label *logicalOperationGen(Node *logi, Label *trueBranch, Label *falseBranch);

@@ -34,13 +34,32 @@ add:
 _start:
     push rbp
     mov rbp, rsp
-    sub rsp, 24
+    sub rsp, 56
     mov eax, -9
     mov dword [rbp - 4], eax
-    mov eax, 2
+    mov eax, -10
     mov dword [rbp - 8], eax
-    mov eax, 4
+    mov eax, -11
     mov dword [rbp - 12], eax
+    push rax
+    pop rbx
+    lea rax, qword [rbp - 4]
+    mov qword [rbp - 20], rax
+    push rax
+    pop rbx
+    mov rax, qword [rbp - 20]
+    mov rax, qword [rax]
+    mov dword [rbp - 24], eax
+    push rax
+    pop rbx
+    lea rax, qword [rbp - 20]
+    mov qword [rbp - 32], rax
+    push rax
+    pop rbx
+    mov rax, qword [rbp - 32]
+    mov rax, qword [rax]
+    mov rax, qword [rax]
+    mov dword [rbp - 36], eax
     jmp .BRANCH.0
 
 .BRANCH.0:
@@ -52,7 +71,19 @@ _start:
     pop rbx
     mov eax, dword [rbp - 4]
     cmp ecx, eax
-    jg .BRANCH.TRUE.0
+    jge .RELAY.0
+    jmp .BRANCH.FALSE.0
+
+.RELAY.0:
+    push rax
+    pop rbx
+    mov eax, dword [rbp - 4]
+    mov ecx, eax
+    push rax
+    pop rbx
+    mov eax, dword [rbp - 12]
+    cmp ecx, eax
+    jne .BRANCH.TRUE.0
     jmp .BRANCH.FALSE.0
 
 .BRANCH.TRUE.0:
@@ -89,11 +120,11 @@ _start:
 .CONT.0:
     xor rax, rax
     mov rdi, fmt
-    mov esi, dword [rbp - 12]
+    mov esi, dword [rbp - 36]
     call printf
 
     mov eax, 0
-    add rsp, 24
+    add rsp, 56
     pop rbp
     mov rax, 60
     xor rdi, rdi

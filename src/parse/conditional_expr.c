@@ -1,13 +1,13 @@
 #include "conditional_expr.h"
 
 Node *comparisionOperatorNode(Token **cur);
-Node *logicalOperatorNode(Token **cur, Var *vars);
+Node *logicalOperatorNode(Token **cur);
 
 bool isLogicalOperator(Token *tk);
 bool isLogicalOperatorInExpr(Token *cur);
 
 // && ||
-Node *logicalOperatorNode(Token **cur, Var *vars) {
+Node *logicalOperatorNode(Token **cur) {
 
     Node *logi = NULL;
     switch ((*cur)->kind) {
@@ -48,7 +48,7 @@ Node *condtionalExprNode(Token **cur, Var *vars) {
 
     if (isLogicalOperator(*cur)) {
         Node *logi = NULL;  
-        logi = logicalOperatorNode(cur, vars);
+        logi = logicalOperatorNode(cur);
         logi->left = condi;
         logi->right = condtionalExprNode(cur, vars);
         return logi;

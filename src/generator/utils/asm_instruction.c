@@ -5,6 +5,8 @@ char *asm_word = "word";
 char *asm_dword = "dword";
 char *asm_qword = "qword";
 
+char *asm_ax = "rax\0eax\0ax";
+
 char *asm_di = "rdi\0edi\0di";
 char *asm_si = "rsi\0esi\0si";
 char *asm_dx = "rdx\0edx\0dx";
@@ -23,6 +25,23 @@ char *getWord(int size) {
             return asm_dword;
         case 8:
             return asm_qword;
+        default:
+            DEBUG_PRINT("out of size");
+            exit(1);
+    }
+}
+
+char *getAXRegister(int size) {
+    switch (size) {
+        case 1:
+            DEBUG_PRINT("hasnt prepared yet\n");
+            exit(1);
+        case 2:
+            return asm_ax + 8;
+        case 4:
+            return asm_ax + 4;
+        case 8:
+            return asm_ax;
         default:
             DEBUG_PRINT("out of size");
             exit(1);
@@ -63,7 +82,7 @@ char *getParamRegister(int nth, int size) {
             DEBUG_PRINT("hasnt prepared yet\n");
             exit(1);
         case 2:
-            return regi + 4;
+            return regi + 8;
         case 4:
             return regi + 4;
         case 8:

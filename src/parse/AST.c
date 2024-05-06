@@ -86,6 +86,13 @@ void printPreorder(Node* node, int depth, char branch) {
                 case AST_LTE:
                     strcpy(str_buf, "<=");
                     break;
+                case AST_ADDRESS_OPERATOR:
+                    strcpy(str_buf, "&");
+                    break;
+                case AST_POINTER:
+                case AST_DEREFENCE_OPERATOR:
+                    strcpy(str_buf, "*");
+                    break;
                 default:
                     strcpy(str_buf, "_");
                     break;

@@ -15,12 +15,12 @@ void assignGen(Node *assign) {
     }
 
     exprGen(expr->left);
-
-    int offset = getVarOffset(var);
-        
-    char *word = getWord(getVarSize(var));
-
-    printf("    mov %s [rbp - %d], eax\n", word, offset);
+    
+    printf("    mov %s [rbp - %d], %s\n"
+            ,getWord(getVarSize(var))
+            ,getVarOffset(var)
+            ,getAXRegister(getVarSize(var)));
+    
 }
 
 void declareGen(Node *declare) {

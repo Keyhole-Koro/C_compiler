@@ -47,7 +47,7 @@ Token *tokenize(char *input) {
       if (i != 1) continue;
     }
 
-    if (strchr("+-*/;=<>(){},[].!?:|^%~#", *ptr)) {
+    if (strchr("+-*/;=&<>(){},[].!?:|^%~#", *ptr)) {
       char char_buf[2] = {*ptr, '\0'};
       TokenKind kind = findTokenKind(char_buf);
       cur = createToken(cur, kind, NULL);
@@ -71,8 +71,6 @@ Token *tokenize(char *input) {
       ptr = rest;
       continue;
     }
-
-    DEBUG_PRINT("%s\n", ptr);
     
     error("token kind not found\n");
     ptr++;
