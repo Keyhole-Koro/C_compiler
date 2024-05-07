@@ -36,7 +36,6 @@ void funcGen(Node *func) {
 
     stmtGen(stmt);
 
-    
     if (strcmp(functionName, "main") == 0) {
         printf("    xor rax, rax\n");
         printf("    mov rdi, fmt\n");
@@ -44,8 +43,6 @@ void funcGen(Node *func) {
         printf("    call printf\n");
         printf("\n");
     }
-
-    
 
     returnGen(func);
    

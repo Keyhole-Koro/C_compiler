@@ -1,9 +1,10 @@
 #include "variable.h"
 
-Var *registerVar(Var *var, char *name, Type *type, int offset) {
+Var *registerVar(Var *var, char *name, Type *type, AST_Type ast_type, int offset) {
     Var *newVar = malloc(sizeof(Var));
     newVar->name = name;
     newVar->type = type;
+    newVar->ast_type = ast_type;
     newVar->offset = offset;
     newVar->next = NULL;
 

@@ -27,29 +27,29 @@ void exprGen(Node *root) {
     Node *node_buf = NULL;
 
     if (root->type == AST_NUMBER) {
-        printf("    mov eax, %d\n", root->value.natural);
+        printf("    mov rax, %d\n", root->value.natural);
     } else {
         exprGen(root->right);
         printf("    push rax\n");
         exprGen(root->left);
-        printf("    pop rbx\n");
+        printf("    pop rdx\n");
         
         switch (root->type) {
             case AST_ADD:
-                printf("    add eax, ebx\n");
+                printf("    add rax, rdx\n");
                 break;
 
             case AST_SUB:
-                printf("    sub eax, ebx\n");
+                printf("    sub rax, rdx\n");
                 break;
 
             case AST_MUL:
-                printf("    imul eax, ebx\n");
+                printf("    imul rax, rdx\n");
                 break;
 
             case AST_DIV:
                 printf("    mov edx, 0\n");
-                printf("    idiv ebx\n");
+                printf("    idiv rdx\n");
                 break;
             
             case AST_DEREFENCE_OPERATOR:

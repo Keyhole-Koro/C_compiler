@@ -2,27 +2,25 @@
 
 #include <stdbool.h>
 
-Var *registerVar(Var *var, char *name, Type *type, int offset);
 Var *findVar(Var *vars, char *expectedName);
-bool isReservedWord(char *name);
 
 Node *variableNode(Token **cur, Var *vars) {
     expect(*cur, IDENTIFIER);
     Token *idtfr = consume(cur);
 
-    char *variableName = idtfr->value;
+    char *varName = idtfr->value;
 
-    if (isReservedWord(variableName)) {
-        DEBUG_PRINT("this identifier is reserved word\n");
+    if (isReservedWord(varName)) {
+        DEBUG_PRINT("this identifier is a reserved word\n");
         exit(1);
     }
     Var *foundVar = NULL;
-    if (!(foundVar = findVar(vars, variableName))) {
+    if (!(foundVar = findVar(vars, varName))) {
         DEBUG_PRINT("this variable has not defined\n");
         exit(1);
     }
 
-    Node *var = createStringNode(AST_VARIABLE, variableName);
+    Node *var = createStringNode(AST_VARIABLE, varName);
     // take this line carefully when you add syntax error handler
     // if foundVar was not found, pass this part otherwise, segmentation fault
     // foundVar->type
@@ -48,18 +46,27 @@ Node *declareVariableNode(Token **cur, Type *type, Var *vars, int *cur_offset) {
  
     /** @brief avoid deplicates*/
     expect(*cur, IDENTIFIER);
-    char *variableName = (*cur)->value;
+    char *varName = (*cur)->value;
     // consider dunctions' identifiers later
-    if (findVar(vars, variableName)) {
+    if (findVar(vars, varName)) {
         DEBUG_PRINT("duplicate identifier\n");
         exit(1);
     }
 
-    Var *registeredVar = registerVar(vars, variableName, type, ((*cur_offset) += type->size));
+    Var *registeredVar = NULL;
     // if variable exist duplicated variable, exit(1)
     
-    Node *var_node = variableNode(cur, registeredVar);
-
+    Node *var_node = NULL;
+    
+    // cur is IDENTIFIER currently
+    if ((*cur)->next->kind == L_BRACKET) {       
+        registeredVar = registerVar(vars, varName, type, AST_ARRAY, ((*cur_offset) += type->size));
+        var_node = arrayNode(cur, registeredVar, cur_offset);
+    } else {
+        registeredVar = registerVar(vars, varName, type, AST_VARIABLE, ((*cur_offset) += type->size));
+        var_node = variableNode(cur, registeredVar);
+    }
+    
     
     Node *type_node = var_node->right;
     if (pointer) type_node->right = pointer;
@@ -83,6 +90,19 @@ Node *declareAssignVariableNode(Token **cur, Type *type, Var *vars, int *cur_off
 Node *assignNode(Token **cur, Node *var_node, Var *vars) {
     Node *assign = createNode(AST_ASSIGN);
     consume(cur);
+
+    int index = -1;
+
+    if ((*cur)->kind == L_BRACKET) {
+        consume(cur);
+
+        Node *expr = exprNode(cur, vars);
+
+        var_node->left->right = expr;
+
+        expect(*cur, R_BRACKET);
+        consume(cur);
+    }
 
     Node *expr = createNode(AST_EXPR);
     expr->left = exprNode(cur, vars);

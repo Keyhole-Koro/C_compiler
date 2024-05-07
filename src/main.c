@@ -14,7 +14,9 @@ int main() {
                         int *d = &a;\
                         int e = *d;\
                         int **f = &d;\
-                        int g = **f;\
+                        int g = **f + 3;\
+                        int h[3];\
+                        h[2] = 4;
                         if ((c >= a) && (a != c)) {\
                            c = add(a, b);\
                         } else if (a >= c) {\
